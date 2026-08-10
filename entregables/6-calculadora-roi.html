@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de ROI · Asistente Holográfica</title>
+    <style>
+        :root {
+            --bg: #070A12;
+            --bg2: #0B111C;
+            --surface: #0E131F;
+            --surface2: #131C2C;
+            --border: #232D40;
+            --border-lit: #3A4A66;
+            --ink: #F4F7FC;
+            --ink2: #9BA7BD;
+            --ink3: #5E6A82;
+            --gold: #E7B24C;
+            --cyan: #56D6E8;
+            --green: #46C99A;
+            --coral: #FF8A70;
+            --serif: Georgia, 'Times New Roman', serif;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 48px 28px 90px
+        }
+
+        .hdr {
+            text-align: center;
+            margin-bottom: 44px
+        }
+
+        .kicker {
+            font-size: 12px;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 16px
+        }
+
+        h1 {
+            font-family: var(--serif);
+            font-size: clamp(28px, 4.2vw, 42px);
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: -.01em
+        }
+
+        .hdr p {
+            color: var(--ink2);
+            font-size: 16px;
+            max-width: 640px;
+            margin: 0 auto
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 24px;
+            align-items: start
+        }
+
+        @media(max-width:900px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .panel {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px
+        }
+
+        .panel h2 {
+            font-family: var(--serif);
+            font-size: 19px;
+            margin-bottom: 6px
+        }
+
+        .panel .sub {
+            color: var(--ink3);
+            font-size: 13px;
+            margin-bottom: 22px
+        }
+
+        .field {
+            margin-bottom: 24px
+        }
+
+        .field label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 14px;
+            color: var(--ink2);
+            margin-bottom: 10px;
+            font-weight: 600
+        }
+
+        .field label b {
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .field .hint {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-top: 8px;
+            line-height: 1.5
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 4px;
+            border-radius: 100px;
+            background: var(--border);
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--cyan);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(86, 214, 232, .6);
+            border: 2px solid var(--bg)
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--cyan);
+            cursor: pointer;
+            border: 2px solid var(--bg)
+        }
+
+        .seg {
+            display: flex;
+            gap: 8px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border)
+        }
+
+        .seg button {
+            flex: 1;
+            background: transparent;
+            border: 0;
+            color: var(--ink3);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 8px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: .2s
+        }
+
+        .seg button.active {
+            background: var(--surface2);
+            color: var(--cyan)
+        }
+
+        .opt-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px
+        }
+
+        .opt {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: .2s;
+            font-size: 13.5px
+        }
+
+        .opt:hover {
+            border-color: var(--border-lit)
+        }
+
+        .opt.sel {
+            border-color: var(--green);
+            background: rgba(70, 201, 154, .06)
+        }
+
+        .opt .name {
+            color: var(--ink)
+        }
+
+        .opt .price {
+            color: var(--ink3);
+            font-size: 12px
+        }
+
+        .opt.sel .price {
+            color: var(--green)
+        }
+
+        .checkline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--ink2);
+            cursor: pointer
+        }
+
+        .checkline input {
+            accent-color: var(--cyan);
+            width: 16px;
+            height: 16px
+        }
+
+        /* Resultados */
+        .results {
+            position: sticky;
+            top: 24px
+        }
+
+        .r-title {
+            font-family: var(--serif);
+            font-size: 19px;
+            margin-bottom: 20px
+        }
+
+        .r-card {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 14px
+        }
+
+        .r-label {
+            font-size: 12.5px;
+            color: var(--ink3);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: .03em
+        }
+
+        .r-value {
+            font-family: var(--serif);
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--ink)
+        }
+
+        .r-value.pos {
+            color: var(--green)
+        }
+
+        .r-value.neu {
+            color: var(--cyan)
+        }
+
+        .r-sub {
+            font-size: 12.5px;
+            color: var(--ink3);
+            margin-top: 6px
+        }
+
+        .r-hero {
+            background: linear-gradient(135deg, rgba(70, 201, 154, .12), rgba(86, 214, 232, .06));
+            border: 1px solid rgba(70, 201, 154, .35);
+            border-radius: 16px;
+            padding: 26px;
+            margin-bottom: 14px;
+            text-align: center
+        }
+
+        .r-hero .r-label {
+            color: var(--green)
+        }
+
+        .r-hero .r-value {
+            font-size: 38px
+        }
+
+        .breakdown {
+            font-size: 13px
+        }
+
+        .brow {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+            color: var(--ink2)
+        }
+
+        .brow:last-child {
+            border-bottom: 0
+        }
+
+        .brow b {
+            color: var(--ink)
+        }
+
+        .footnote {
+            font-size: 12px;
+            color: var(--ink3);
+            line-height: 1.6;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border)
+        }
+
+        .footnote strong {
+            color: var(--ink2)
+        }
+
+        .fx-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 14px
+        }
+
+        .fx-field input {
+            width: 70px;
+            background: transparent;
+            border: 0;
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 700;
+            outline: none
+        }
+
+        .fx-field span {
+            color: var(--ink3);
+            font-size: 13px
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="hdr">
+            <div class="kicker">Herramienta de decisión</div>
+            <h1>¿Cuánto cuesta tu recepción hoy,<br>y cuánto podrías ahorrar?</h1>
+            <p>Ajusta los valores según tu operación real. Los resultados se recalculan al instante — esto no es una
+                cifra fija, es tu propio número.</p>
+        </div>
+
+        <div class="layout">
+            <!-- INPUTS -->
+            <div class="panel">
+                <h2>Tu situación actual</h2>
+                <div class="sub">El costo real de una recepcionista humana, más allá del sueldo.</div>
+
+                <div class="field">
+                    <label>Perfil de la recepcionista</label>
+                    <div class="seg" id="seg-perfil">
+                        <button class="active" data-min="8000" data-max="12000">Monolingüe</button>
+                        <button data-min="13000" data-max="18000">Bilingüe</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Salario mensual <b id="lbl-salario">$10,000</b></label>
+                    <input type="range" id="salario" min="8000" max="12000" step="500" value="10000">
+                    <div class="hint">Rango de mercado en México: $8,000–$12,000 monolingüe · $13,000–$18,000 bilingüe.
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Factor de carga patronal <b id="lbl-carga">40%</b></label>
+                    <input type="range" id="carga" min="20" max="50" step="1" value="40">
+                    <div class="hint">Prestaciones de ley + IMSS + Infonavit + aguinaldo + prima vacacional + impuesto
+                        sobre nómina estatal. Fuentes especializadas de nómina en México reportan un costo total de
+                        entre 25% y 50% adicional al salario nominal, según el nivel salarial y el estado. Ajusta según
+                        tu caso.</div>
+                </div>
+
+                <h2 style="margin-top:32px">El sistema</h2>
+                <div class="sub">Elige la configuración que estás considerando.</div>
+
+                <div class="field">
+                    <label>Tipo de cambio de referencia</label>
+                    <div class="fx-field">
+                        <span>1 USD =</span>
+                        <input type="number" id="fx" value="18.5" step="0.1">
+                        <span>MXN</span>
+                    </div>
+                    <div class="hint">El servidor se cotiza en USD. Ajusta al tipo de cambio del día si lo necesitas.
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Motor del sistema</label>
+                    <div class="opt-list" id="opt-motor">
+                        <div class="opt sel" data-usd="1999"><span class="name">Equipo eficiente (AMD)</span><span
+                                class="price">≈ $1,999 USD</span></div>
+                        <div class="opt" data-usd="4699"><span class="name">Equipo de alto rendimiento
+                                (NVIDIA)</span><span class="price">≈ $4,699 USD</span></div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Pantalla</label>
+                    <div class="opt-list" id="opt-display">
+                        <div class="opt sel" data-mxn="2850" data-speakers="true"><span class="name">Holograma
+                                (ventilador)</span><span class="price">~$2,850 MXN</span></div>
+                        <div class="opt" data-mxn="13500" data-speakers="false"><span class="name">Pantalla 55"
+                                premium</span><span class="price">~$13,500 MXN</span></div>
+                        <div class="opt" data-mxn="32000" data-speakers="true"><span class="name">Pantalla
+                                transparente</span><span class="price">~$32,000 MXN</span></div>
+                    </div>
+                    <div class="hint" id="speaker-note">+ Bocinas ($2,190 MXN) — esta opción no incluye audio integrado.
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Fee de desarrollo e instalación <b id="lbl-fee">$55,000</b></label>
+                    <input type="range" id="fee" min="45000" max="65000" step="1000" value="55000">
+                </div>
+
+                <div class="field">
+                    <label>Soporte mensual <b id="lbl-soporte">$4,000</b></label>
+                    <input type="range" id="soporte" min="3000" max="5000" step="250" value="4000">
+                </div>
+
+                <div class="field">
+                    <label class="checkline"><input type="checkbox" id="sinacceso"> No cuentan con software de control
+                        de accesos (costo adicional a cotizar aparte)</label>
+                </div>
+            </div>
+
+            <!-- RESULTADOS -->
+            <div class="results">
+                <div class="r-title">Lo que esto significa</div>
+
+                <div class="r-hero">
+                    <div class="r-label">Periodo de recuperación</div>
+                    <div class="r-value" id="r-payback">—</div>
+                    <div class="r-sub">Meses hasta que el sistema se paga solo</div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Costo anual de una recepcionista humana</div>
+                    <div class="r-value" id="r-humano">—</div>
+                    <div class="r-sub">Salario + carga patronal completa, 12 meses</div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Inversión total del sistema — año 1</div>
+                    <div class="r-value neu" id="r-sistema">—</div>
+                    <div class="breakdown" id="r-breakdown"></div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Ahorro en el primer año</div>
+                    <div class="r-value pos" id="r-ahorro1">—</div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Ahorro cada año siguiente</div>
+                    <div class="r-value pos" id="r-ahorroN">—</div>
+                    <div class="r-sub">Sin costo de hardware ni fee — solo soporte mensual</div>
+                </div>
+
+                <div class="footnote">
+                    <strong>No incluido en este cálculo</strong> — gabinete/montaje (cotización local), importación y
+                    logística del equipo, y control de accesos si el cliente no cuenta con uno (marcado arriba).
+                    Rotación y ausentismo de personal humano son un costo adicional real que no se cuantifica aquí para
+                    mantener el número conservador.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+
+        let perfil = { min: 8000, max: 12000 };
+        let motorUSD = 1999;
+        let displayMXN = 2850;
+        let needsSpeakers = true;
+
+        // Segmented control: perfil
+        document.querySelectorAll('#seg-perfil button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#seg-perfil button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const min = parseInt(btn.dataset.min), max = parseInt(btn.dataset.max);
+                $('salario').min = min; $('salario').max = max;
+                $('salario').value = Math.round((min + max) / 2);
+                calc();
+            });
+        });
+
+        // Opciones motor
+        document.querySelectorAll('#opt-motor .opt').forEach(o => {
+            o.addEventListener('click', () => {
+                document.querySelectorAll('#opt-motor .opt').forEach(x => x.classList.remove('sel'));
+                o.classList.add('sel');
+                motorUSD = parseFloat(o.dataset.usd);
+                calc();
+            });
+        });
+
+        // Opciones display
+        document.querySelectorAll('#opt-display .opt').forEach(o => {
+            o.addEventListener('click', () => {
+                document.querySelectorAll('#opt-display .opt').forEach(x => x.classList.remove('sel'));
+                o.classList.add('sel');
+                displayMXN = parseFloat(o.dataset.mxn);
+                needsSpeakers = o.dataset.speakers === 'true';
+                $('speaker-note').style.display = needsSpeakers ? 'block' : 'none';
+                calc();
+            });
+        });
+
+        ['salario', 'carga', 'fee', 'soporte', 'fx'].forEach(id => {
+            $(id).addEventListener('input', calc);
+        });
+        $('sinacceso').addEventListener('change', calc);
+
+        function calc() {
+            const salario = parseFloat($('salario').value);
+            const carga = parseFloat($('carga').value);
+            const fee = parseFloat($('fee').value);
+            const soporte = parseFloat($('soporte').value);
+            const fx = parseFloat($('fx').value) || 18.5;
+
+            $('lbl-salario').textContent = fmt(salario);
+            $('lbl-carga').textContent = carga + '%';
+            $('lbl-fee').textContent = fmt(fee);
+            $('lbl-soporte').textContent = fmt(soporte);
+
+            const costoHumanoAnual = salario * (1 + carga / 100) * 12;
+
+            const motorMXN = motorUSD * fx;
+            const camaraMXN = 199 * fx;
+            const bocinasMXN = needsSpeakers ? 2190 : 0;
+            const soporteAnual = soporte * 12;
+
+            const sistemaAno1 = motorMXN + camaraMXN + displayMXN + bocinasMXN + fee + soporteAnual;
+            const ahorro1 = costoHumanoAnual - sistemaAno1;
+            const ahorroN = costoHumanoAnual - soporteAnual;
+
+            const costoHumanoMensual = costoHumanoAnual / 12;
+            const paybackMonths = (costoHumanoMensual - soporte) > 0
+                ? (sistemaAno1 - soporteAnual) / (costoHumanoMensual - soporte)
+                : null;
+
+            $('r-humano').textContent = fmt(costoHumanoAnual);
+            $('r-sistema').textContent = fmt(sistemaAno1);
+            $('r-ahorro1').textContent = (ahorro1 >= 0 ? '+' : '') + fmt(ahorro1);
+            $('r-ahorroN').textContent = (ahorroN >= 0 ? '+' : '') + fmt(ahorroN);
+            $('r-payback').textContent = paybackMonths ? Math.max(1, Math.round(paybackMonths)) + ' meses' : 'N/D';
+
+            $('r-breakdown').innerHTML = `
+      <div class="brow"><span>Servidor</span><b>${fmt(motorMXN)}</b></div>
+      <div class="brow"><span>Cámara</span><b>${fmt(camaraMXN)}</b></div>
+      <div class="brow"><span>Pantalla</span><b>${fmt(displayMXN)}</b></div>
+      ${needsSpeakers ? `<div class="brow"><span>Bocinas</span><b>${fmt(bocinasMXN)}</b></div>` : ''}
+      <div class="brow"><span>Desarrollo e instalación</span><b>${fmt(fee)}</b></div>
+      <div class="brow"><span>Soporte (12 meses)</span><b>${fmt(soporteAnual)}</b></div>
+    `;
+
+            if ($('sinacceso').checked) {
+                $('r-breakdown').innerHTML += `<div class="brow" style="color:var(--coral)"><span>+ Control de accesos</span><b>A cotizar</b></div>`;
+            }
+        }
+
+        calc();
+    </script>
+</body>
+
+</html>

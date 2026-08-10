@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Asistente Holográfica · Panorama de Mercado</title>
+    <style>
+        :root {
+            --bg: #070A12;
+            --bg2: #0B111C;
+            --surface: #0E131F;
+            --surface2: #131C2C;
+            --border: #232D40;
+            --border-lit: #3A4A66;
+            --ink: #F4F7FC;
+            --ink2: #9BA7BD;
+            --ink3: #5E6A82;
+            --gold: #E7B24C;
+            --cyan: #56D6E8;
+            --green: #46C99A;
+            --coral: #FF8A70;
+            --serif: Georgia, 'Times New Roman', serif;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            --maxw: 1060px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        html {
+            scroll-behavior: smooth
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--sans);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden
+        }
+
+        .pbar-wrap {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, .05);
+            z-index: 200
+        }
+
+        .pbar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--gold), var(--cyan));
+            transition: width .25s ease
+        }
+
+        .dots {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            gap: 13px
+        }
+
+        .dots button {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 1.5px solid var(--ink3);
+            background: transparent;
+            cursor: pointer;
+            padding: 0;
+            transition: .25s
+        }
+
+        .dots button.active {
+            background: var(--gold);
+            border-color: var(--gold);
+            transform: scale(1.35);
+            box-shadow: 0 0 12px rgba(231, 178, 76, .5)
+        }
+
+        @media(max-width:820px) {
+            .dots {
+                display: none
+            }
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 96px 30px;
+            position: relative
+        }
+
+        .inner {
+            width: 100%;
+            max-width: var(--maxw);
+            margin: 0 auto
+        }
+
+        .center {
+            text-align: center
+        }
+
+        .kicker {
+            font-size: 12px;
+            letter-spacing: .32em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            gap: 12px
+        }
+
+        .center .kicker {
+            justify-content: center
+        }
+
+        .kicker::before,
+        .center .kicker::after {
+            content: "";
+            height: 1px;
+            width: 34px;
+            background: linear-gradient(90deg, transparent, var(--gold))
+        }
+
+        .kicker::before {
+            background: linear-gradient(90deg, var(--gold), transparent)
+        }
+
+        .kicker:not(.center .kicker)::after {
+            display: none
+        }
+
+        h1 {
+            font-family: var(--serif);
+            font-size: clamp(36px, 6.2vw, 66px);
+            line-height: 1.08;
+            font-weight: 700;
+            letter-spacing: -.015em;
+            margin-bottom: 26px
+        }
+
+        h2 {
+            font-family: var(--serif);
+            font-size: clamp(27px, 4.2vw, 44px);
+            line-height: 1.12;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            margin-bottom: 22px
+        }
+
+        .lead {
+            font-size: clamp(17px, 2.1vw, 21px);
+            color: var(--ink2);
+            max-width: 660px;
+            line-height: 1.65
+        }
+
+        .center .lead {
+            margin-left: auto;
+            margin-right: auto
+        }
+
+        .em-gold {
+            color: var(--gold)
+        }
+
+        .em-cyan {
+            color: var(--cyan)
+        }
+
+        .em-green {
+            color: var(--green)
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity .8s cubic-bezier(.2, .7, .2, 1), transform .8s cubic-bezier(.2, .7, .2, 1)
+        }
+
+        .reveal.show {
+            opacity: 1;
+            transform: none
+        }
+
+        .d1 {
+            transition-delay: .1s
+        }
+
+        .d2 {
+            transition-delay: .2s
+        }
+
+        .d3 {
+            transition-delay: .3s
+        }
+
+        .d4 {
+            transition-delay: .4s
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--ink3);
+            font-size: 12px;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            animation: bob 2.2s ease-in-out infinite
+        }
+
+        @keyframes bob {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0)
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(8px)
+            }
+        }
+
+        #s1 {
+            background: radial-gradient(1200px 700px at 50% 30%, rgba(86, 214, 232, .07), transparent 60%), var(--bg)
+        }
+
+        .eyebrow-badge {
+            font-family: var(--serif);
+            font-size: 14px;
+            letter-spacing: .4em;
+            text-transform: uppercase;
+            color: var(--ink2);
+            margin-bottom: 36px;
+            font-weight: 400
+        }
+
+        .holo {
+            position: relative;
+            width: 210px;
+            height: 260px;
+            margin: 6px auto 0
+        }
+
+        .holo .beam {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 170px;
+            height: 205px;
+            background: linear-gradient(to top, rgba(86, 214, 232, .2), rgba(86, 214, 232, .05) 55%, transparent);
+            clip-path: polygon(24% 100%, 76% 100%, 96% 0, 4% 0);
+            filter: blur(2px)
+        }
+
+        .holo .base {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 14px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(86, 214, 232, .85), rgba(86, 214, 232, .15) 70%, transparent);
+            box-shadow: 0 0 36px rgba(86, 214, 232, .55);
+            animation: pulse 3s ease-in-out infinite
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: .75
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        .holo svg {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: float 4.5s ease-in-out infinite
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateX(-50%) translateY(0)
+            }
+
+            50% {
+                transform: translateX(-50%) translateY(-9px)
+            }
+        }
+
+        .holo .scan {
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(to bottom, transparent 0, transparent 3px, rgba(86, 214, 232, .06) 4px, transparent 5px);
+            pointer-events: none;
+            animation: scan 6s linear infinite
+        }
+
+        @keyframes scan {
+            0% {
+                background-position-y: 0
+            }
+
+            100% {
+                background-position-y: 120px
+            }
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px;
+            margin-top: 40px;
+            width: 100%
+        }
+
+        .g2 {
+            grid-template-columns: repeat(2, 1fr)
+        }
+
+        .g3 {
+            grid-template-columns: repeat(3, 1fr)
+        }
+
+        @media(max-width:780px) {
+
+            .g2,
+            .g3 {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .card {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 26px;
+            transition: .3s
+        }
+
+        .card:hover {
+            border-color: var(--border-lit);
+            transform: translateY(-4px)
+        }
+
+        .card .ic {
+            color: var(--cyan);
+            margin-bottom: 15px
+        }
+
+        .card h3 {
+            font-size: 18px;
+            font-weight: 650;
+            margin-bottom: 7px
+        }
+
+        .card p {
+            font-size: 14.5px;
+            color: var(--ink2)
+        }
+
+        /* Tarjetas de cifra de mercado */
+        .stat-card {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            text-align: left
+        }
+
+        .stat-card .from-to {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 14px 0 6px
+        }
+
+        .stat-card .num {
+            font-family: var(--serif);
+            font-size: clamp(26px, 3.4vw, 34px);
+            font-weight: 700;
+            color: var(--ink)
+        }
+
+        .stat-card .arrow {
+            color: var(--ink3);
+            font-size: 18px
+        }
+
+        .stat-card .num.to {
+            color: var(--green)
+        }
+
+        .stat-card .bar-track {
+            height: 6px;
+            border-radius: 100px;
+            background: rgba(255, 255, 255, .06);
+            margin: 16px 0 6px;
+            overflow: hidden
+        }
+
+        .stat-card .bar-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, var(--cyan), var(--green))
+        }
+
+        .stat-card .cagr {
+            font-size: 12.5px;
+            color: var(--gold);
+            font-weight: 700;
+            letter-spacing: .03em
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: var(--ink2);
+            margin-top: 10px
+        }
+
+        .invest-btn {
+            margin-top: 18px;
+            background: transparent;
+            border: 1px solid var(--border-lit);
+            color: var(--ink2);
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .02em;
+            padding: 10px 18px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: .25s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .invest-btn:hover {
+            border-color: var(--gold);
+            color: var(--gold)
+        }
+
+        .invest-btn svg {
+            width: 14px;
+            height: 14px;
+            transition: transform .3s
+        }
+
+        .invest-btn.open svg {
+            transform: rotate(180deg)
+        }
+
+        .invest {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height .45s ease
+        }
+
+        .invest-in {
+            padding: 16px 2px 2px;
+            color: var(--ink2);
+            font-size: 13.5px;
+            line-height: 1.6;
+            border-top: 1px dashed var(--border);
+            margin-top: 14px
+        }
+
+        .invest-in b {
+            color: var(--ink)
+        }
+
+        .vs-card {
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--border)
+        }
+
+        .vs-card.gap {
+            border-color: rgba(255, 138, 102, .35);
+            background: rgba(255, 138, 102, .04)
+        }
+
+        .vs-card.win {
+            border-color: rgba(70, 201, 154, .35);
+            background: rgba(70, 201, 154, .05)
+        }
+
+        .vs-tag {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .05em;
+            text-transform: uppercase
+        }
+
+        .vs-card.gap .vs-tag {
+            color: var(--coral)
+        }
+
+        .vs-card.win .vs-tag {
+            color: var(--green)
+        }
+
+  /* Gráficas de crecimiento animadas */
+  .growth-row{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:18px;margin-top:22px}
+  @media(max-width:780px){.growth-row{grid-template-columns:1fr}}
+  .growth-chart{background:linear-gradient(180deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:16px;padding:22px 20px 18px;display:flex;flex-direction:column}
+  .gc-title{font-size:12.5px;color:var(--ink3);margin-bottom:16px;min-height:32px;line-height:1.4}
+  .gc-bars{display:flex;align-items:flex-end;justify-content:center;gap:16px}
+  .gc-bar-col{flex:0 0 84px;display:flex;flex-direction:column;align-items:center}
+  .growth-chart.single .gc-bar-col{flex:0 0 130px}
+  .gc-value{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--ink);margin-bottom:8px;white-space:nowrap}
+  .gc-bar-col.end .gc-value{color:var(--green)}
+  .gc-bar-wrap{width:100%;height:150px;display:flex;align-items:flex-end;justify-content:center}
+  .gc-bar{width:56%;height:0;border-radius:6px 6px 0 0;background:linear-gradient(180deg,var(--cyan),rgba(86,214,232,.35));transition:height 1.5s cubic-bezier(.16,.9,.3,1)}
+  .gc-bar-col.end .gc-bar{background:linear-gradient(180deg,var(--green),rgba(70,201,154,.35))}
+  .growth-chart.grow .gc-bar{height:var(--h)}
+  .gc-year{font-size:11px;color:var(--ink3);margin-top:10px;letter-spacing:.03em}
+        @media(max-width:520px) {
+            section {
+                padding: 80px 20px
+            }
+
+            .holo {
+                transform: scale(.85)
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pbar-wrap">
+        <div class="pbar" id="pbar"></div>
+    </div>
+    <nav class="dots" id="dots"></nav>
+    <main id="main">
+
+        <!-- 1 · PORTADA -->
+        <section id="s1" class="center">
+            <div class="inner">
+                <div class="eyebrow-badge reveal">PANORAMA DE MERCADO</div>
+                <div class="holo reveal d1" aria-hidden="true">
+                    <div class="beam"></div>
+                    <svg width="130" height="155" viewBox="0 0 150 180" fill="none">
+                        <defs>
+                            <linearGradient id="hg" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0" stop-color="#7DE9F5" />
+                                <stop offset="1" stop-color="#2E8FA8" stop-opacity=".3" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="75" cy="52" r="30" fill="url(#hg)" opacity=".85" />
+                        <path d="M28 178 C28 128 50 104 75 104 C100 104 122 128 122 178 Z" fill="url(#hg)"
+                            opacity=".8" />
+                    </svg>
+                    <div class="scan"></div>
+                    <div class="base"></div>
+                </div>
+                <h1 class="reveal d2" style="margin-top:30px">Una industria que ya existe afuera.<br>En México, <span
+                        class="em-cyan">todavía no.</span></h1>
+                <p class="lead reveal d3">La asistente holográfica con inteligencia artificial ya se vende en Estados
+                    Unidos y Europa. En México, nadie la ha puesto a funcionar de verdad — cumpliendo la ley, con
+                    soporte local.</p>
+            </div>
+            <div class="hint">Ver el tamaño ↓</div>
+        </section>
+
+        <!-- 2 · TAMAÑO DE LA OPORTUNIDAD -->
+        <section id="s2" style="background:var(--bg2)">
+            <div class="inner">
+                <div class="kicker reveal">El tamaño de la oportunidad</div>
+                <h2 class="reveal d1">No es una moda.<br>Es una industria en crecimiento de doble dígito.</h2>
+                <div class="grid g3">
+                    <div class="stat-card reveal d1">
+                        <div class="label">Asistentes con IA tipo holograma (global)</div>
+                        <div class="from-to"><span class="num">$842M</span><span class="arrow">→</span><span
+                                class="num to">$6,355M</span></div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:88%"></div>
+                        </div>
+                        <div class="cagr">CAGR ~22.4% · 2025 → 2035</div>
+                        <button class="invest-btn" data-target="src1">Ver fuente y detalle
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></button>
+                        <div class="invest" id="src1">
+                            <div class="invest-in">Proyección de mercado global de asistentes con inteligencia
+                                artificial en formato holograma. <b>Fuente: Fact.MR.</b></div>
+                        </div>
+                    </div>
+                    <div class="stat-card reveal d2">
+                        <div class="label">Recepcionistas virtuales con IA (global)</div>
+                        <div class="from-to"><span class="num to">$4.64B</span></div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:70%"></div>
+                        </div>
+                        <div class="cagr">Estimado para 2026</div>
+                        <button class="invest-btn" data-target="src2">Ver fuente y detalle
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></button>
+                        <div class="invest" id="src2">
+                            <div class="invest-in">Mercado global de recepción atendida por inteligencia artificial,
+                                incluyendo soluciones sin presencia física. <b>Fuente: ALM Corp.</b></div>
+                        </div>
+                    </div>
+                    <div class="stat-card reveal d3">
+                        <div class="label">Reconocimiento facial (México)</div>
+                        <div class="from-to"><span class="num to">$129.6M</span></div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:55%"></div>
+                        </div>
+                        <div class="cagr">CAGR ~9.36% · proyección a 2030</div>
+                        <button class="invest-btn" data-target="src3">Ver fuente y detalle
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg></button>
+                        <div class="invest" id="src3">
+                            <div class="invest-in">Mercado mexicano de tecnología de reconocimiento facial, base técnica
+                                de la biometría del producto. <b>Fuente: Statista.</b></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+      <div class="growth-row">
+        <!-- Único con dos puntos reales: crecimiento genuino 2025→2035 -->
+        <div class="growth-chart reveal d1">
+          <div class="gc-title">Asistentes con IA tipo holograma — crecimiento real</div>
+          <div class="gc-bars">
+            <div class="gc-bar-col">
+              <div class="gc-value" data-count-to="842" data-prefix="$" data-suffix="M">$0M</div>
+              <div class="gc-bar-wrap"><div class="gc-bar" style="--h:13%"></div></div>
+              <div class="gc-year">2025</div>
+            </div>
+            <div class="gc-bar-col end">
+              <div class="gc-value" data-count-to="6355" data-prefix="$" data-suffix="M" data-comma="true">$0M</div>
+              <div class="gc-bar-wrap"><div class="gc-bar" style="--h:100%"></div></div>
+              <div class="gc-year">2035</div>
+            </div>
+          </div>
+        </div>
+        <!-- Un solo punto verificado: se muestra como proyección, no como comparación -->
+        <div class="growth-chart single reveal d2">
+          <div class="gc-title">Recepcionistas virtuales con IA — proyección 2026</div>
+          <div class="gc-bars">
+            <div class="gc-bar-col end">
+              <div class="gc-value" data-count-to="4.64" data-prefix="$" data-suffix="B" data-decimals="2">$0B</div>
+              <div class="gc-bar-wrap"><div class="gc-bar" style="--h:100%"></div></div>
+              <div class="gc-year">2026</div>
+            </div>
+          </div>
+        </div>
+        <!-- Un solo punto verificado: se muestra como proyección, no como comparación -->
+        <div class="growth-chart single reveal d3">
+          <div class="gc-title">Reconocimiento facial en México — proyección 2030</div>
+          <div class="gc-bars">
+            <div class="gc-bar-col end">
+              <div class="gc-value" data-count-to="129.6" data-prefix="$" data-suffix="M" data-decimals="1">$0M</div>
+              <div class="gc-bar-wrap"><div class="gc-bar" style="--h:100%"></div></div>
+              <div class="gc-year">2030</div>
+            </div>
+          </div>
+        </div>
+      </div>
+            <div class="hint">Sigue ↓</div>
+        </section>
+
+        <!-- 3 · EL VACÍO EN MÉXICO -->
+        <section id="s3">
+            <div class="inner">
+                <div class="kicker reveal">Lo que nadie ha resuelto todavía</div>
+                <h2 class="reveal d1">Hay quien tiene el efecto.<br>Hay quien tiene la función.<br><span
+                        class="em-gold">Nadie tiene las dos, aquí.</span></h2>
+                <div class="grid g2" style="margin-top:36px">
+                    <div class="vs-card gap reveal d1">
+                        <span class="vs-tag">Tienen el efecto visual</span>
+                        <h3 style="margin:12px 0 8px;font-size:18px">Sin cumplimiento ni soporte local</h3>
+                        <p style="font-size:14.5px;color:var(--ink2)">Existen hologramas impresionantes en Estados
+                            Unidos, Europa y Medio Oriente. En México hubo un intento puntual en 2025 en la Ciudad de
+                            México — un evento, no un producto — y no cumplió con la ley mexicana de datos personales.
+                        </p>
+                    </div>
+                    <div class="vs-card gap reveal d2">
+                        <span class="vs-tag">Tienen la función</span>
+                        <h3 style="margin:12px 0 8px;font-size:18px">Sin presencia visual ni biometría propia</h3>
+                        <p style="font-size:14.5px;color:var(--ink2)">Existen plataformas de recepción con inteligencia
+                            artificial que resuelven la gestión de visitantes, pero sin avatar, sin reconocimiento
+                            facial nativo, y sin soporte en español para Latinoamérica.</p>
+                    </div>
+                </div>
+                <div class="vs-card win reveal d3" style="margin-top:16px">
+                    <span class="vs-tag">La ventana abierta</span>
+                    <h3 style="margin:12px 0 8px;font-size:18px">Las dos cosas juntas, cumpliendo la ley, en México</h3>
+                    <p style="font-size:14.5px;color:var(--ink2)">Ningún actor identificado integra presencia de avatar
+                        + seguridad biométrica + cumplimiento legal + soporte local en México. Esa combinación, hoy, no
+                        tiene dueño.</p>
+                </div>
+            </div>
+            <div class="hint">Y ya no es una idea en papel ↓</div>
+        </section>
+
+        <!-- 4 · LA PRUEBA REAL -->
+        <section id="s4" style="background:linear-gradient(180deg,var(--bg2),#0C1420)">
+            <div class="inner center">
+                <div class="kicker reveal">La diferencia entre una idea y un producto</div>
+                <h2 class="reveal d1">Ya existe un primer caso<br><span class="em-green">funcionando de verdad.</span>
+                </h2>
+                <p class="lead reveal d2">No es una maqueta ni una promesa en una diapositiva. Hay un primer piloto
+                    operando en un espacio real de coworking en Querétaro — el avatar reconoce, conversa, abre la puerta
+                    y avisa por WhatsApp, hoy.</p>
+                <div class="grid g3">
+                    <div class="card reveal d1">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <path d="M9 12l2 2 4-4" />
+                            <circle cx="12" cy="12" r="9" />
+                        </svg>
+                        <h3>Probado, no prometido</h3>
+                        <p>El sistema opera en un espacio real, con miembros reales, todos los días.</p>
+                    </div>
+                    <div class="card reveal d2">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <rect x="5" y="11" width="14" height="10" rx="2" />
+                            <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                        </svg>
+                        <h3>Legal desde el diseño</h3>
+                        <p>Cumple la ley mexicana de datos personales — el requisito que nadie más resuelve hoy.</p>
+                    </div>
+                    <div class="card reveal d3">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <path d="M13 2L4 14h7l-1 8 9-12h-7z" />
+                        </svg>
+                        <h3>Listo para mostrarse</h3>
+                        <p>Un espacio físico donde cualquier interesado puede verlo funcionar en persona.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hint">Por qué se adoptaría rápido ↓</div>
+        </section>
+
+        <!-- 5 · EL ARGUMENTO DE ROI -->
+        <section id="s5">
+            <div class="inner">
+                <div class="kicker reveal">Por qué una empresa diría que sí</div>
+                <h2 class="reveal d1">El retorno no depende de creer en la tecnología.<br>Depende de resolver un
+                    problema real.</h2>
+                <div class="grid g3">
+                    <div class="card reveal d1">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <path d="M12 6v12M6 12h12" />
+                        </svg>
+                        <h3>Ahorro operativo</h3>
+                        <p>Sustituye o complementa una función que hoy cuesta sueldo, prestaciones y rotación.</p>
+                    </div>
+                    <div class="card reveal d2">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M12 7v5l3 3" />
+                        </svg>
+                        <h3>Disponibilidad total</h3>
+                        <p>Atiende 24/7, sin ausencias, sin descansos, sin variabilidad de humor o desempeño.</p>
+                    </div>
+                    <div class="card reveal d3">
+                        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.6">
+                            <path d="M9 12l2 2 4-4" />
+                            <rect x="4" y="4" width="16" height="16" rx="3" />
+                        </svg>
+                        <h3>Vendible a corporativos</h3>
+                        <p>El cumplimiento legal es justo el argumento que un cliente empresarial exige antes de firmar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="hint">Y esto es apenas el primer caso ↓</div>
+        </section>
+
+        <!-- 6 · ESCALABILIDAD -->
+        <section id="s6" style="background:var(--bg2)">
+            <div class="inner center">
+                <div class="kicker reveal">De un caso a un producto</div>
+                <h2 class="reveal d1">Probarlo una vez no es el final.<br><span class="em-cyan">Es la plantilla para
+                        repetirlo.</span></h2>
+                <p class="lead reveal d2">Cada pieza del sistema —el reconocimiento, la conversación, el cumplimiento
+                    legal— ya está resuelta una vez. Llevarlo a un segundo espacio no significa empezar de cero:
+                    significa instalar algo que ya funciona.</p>
+                <div class="grid g2">
+                    <div class="card reveal d1">
+                        <h3>Un proyecto a la medida</h3>
+                        <p>Así empieza casi toda tecnología nueva: resolver un caso, aprender, ajustar.</p>
+                    </div>
+                    <div class="card reveal d2" style="border-color:rgba(70,201,154,.35)">
+                        <h3 class="em-green">Un producto replicable</h3>
+                        <p>Con el primer caso probado, cada instalación nueva parte de una base que ya se sabe que
+                            funciona.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hint">Cierre ↓</div>
+        </section>
+
+        <!-- 7 · CIERRE -->
+        <section id="s7" class="center"
+            style="background:radial-gradient(1000px 600px at 50% 40%,rgba(86,214,232,.08),transparent 60%),var(--bg)">
+            <div class="inner">
+                <div class="kicker reveal">La posición</div>
+                <h1 class="reveal d1">Afuera, esta industria<br>ya se mide en miles de millones.</h1>
+                <p class="lead reveal d2" style="font-size:22px;color:var(--ink);margin:24px auto 0">En México, todavía
+                    nadie es <span class="em-gold">el primero.</span></p>
+                <p class="lead reveal d3" style="margin-top:30px">Esa posición está disponible ahora mismo.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        var sections = [].slice.call(document.querySelectorAll('section'));
+        var dotsWrap = document.getElementById('dots');
+        var pbar = document.getElementById('pbar');
+
+        sections.forEach(function (s, i) {
+            var b = document.createElement('button');
+            b.setAttribute('aria-label', 'Sección ' + (i + 1));
+            b.onclick = function () { s.scrollIntoView({ behavior: 'smooth' }); };
+            dotsWrap.appendChild(b);
+        });
+        var dots = [].slice.call(dotsWrap.children);
+
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (e.isIntersecting) {
+                    [].slice.call(e.target.querySelectorAll('.reveal')).forEach(function (r) { r.classList.add('show'); });
+                    var idx = sections.indexOf(e.target);
+                    dots.forEach(function (d, i) { d.classList.toggle('active', i === idx); });
+                }
+            });
+        }, { threshold: 0.35 });
+        sections.forEach(function (s) { io.observe(s); });
+
+        window.addEventListener('scroll', function () {
+            var h = document.documentElement;
+            pbar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+        });
+
+        // Ver fuente y detalle
+        [].slice.call(document.querySelectorAll('.invest-btn')).forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var panel = document.getElementById(btn.getAttribute('data-target'));
+                var open = panel.style.maxHeight && panel.style.maxHeight !== '0px';
+                if (open) { panel.style.maxHeight = '0px'; btn.classList.remove('open'); }
+                else { panel.style.maxHeight = panel.scrollHeight + 30 + 'px'; btn.classList.add('open'); }
+            });
+        });
+
+        // Navegación con teclado
+        window.addEventListener('keydown', function (ev) {
+            var cur = -1;
+            sections.forEach(function (s, i) {
+                var r = s.getBoundingClientRect();
+                if (r.top >= -window.innerHeight * 0.4 && r.top <= window.innerHeight * 0.4) cur = i;
+            });
+            if ((ev.key === 'ArrowDown' || ev.key === 'ArrowRight' || ev.key === ' ') && cur < sections.length - 1) { ev.preventDefault(); sections[cur + 1].scrollIntoView({ behavior: 'smooth' }); }
+            if ((ev.key === 'ArrowUp' || ev.key === 'ArrowLeft') && cur > 0) { ev.preventDefault(); sections[cur - 1].scrollIntoView({ behavior: 'smooth' }); }
+        });
+  // Gráficas animadas: contador numérico + barra creciendo
+  function formatNumber(value, decimals, comma){
+    if(comma) return value.toLocaleString('en-US',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+    return value.toFixed(decimals);
+  }
+  function animateCount(el, target, duration, prefix, suffix, decimals, comma){
+    var startTime=null;
+    function step(ts){
+      if(!startTime) startTime=ts;
+      var progress=Math.min((ts-startTime)/duration,1);
+      var eased=1-Math.pow(1-progress,3);
+      el.textContent=prefix+formatNumber(target*eased,decimals,comma)+suffix;
+      if(progress<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  var chartObserver=new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && !entry.target.classList.contains('grow')){
+        entry.target.classList.add('grow');
+        [].slice.call(entry.target.querySelectorAll('.gc-value')).forEach(function(v){
+          var target=parseFloat(v.getAttribute('data-count-to'));
+          var prefix=v.getAttribute('data-prefix')||'';
+          var suffix=v.getAttribute('data-suffix')||'';
+          var decimals=v.getAttribute('data-decimals')?parseInt(v.getAttribute('data-decimals')):0;
+          var comma=v.getAttribute('data-comma')==='true';
+          animateCount(v,target,1600,prefix,suffix,decimals,comma);
+        });
+      }
+    });
+  },{threshold:0.4});
+  [].slice.call(document.querySelectorAll('.growth-chart')).forEach(function(c){chartObserver.observe(c);});
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precio de Venta y Utilidad · El Negocio</title>
+    <style>
+        :root {
+            --bg: #070A12;
+            --bg2: #0B111C;
+            --surface: #0E131F;
+            --surface2: #131C2C;
+            --border: #232D40;
+            --border-lit: #3A4A66;
+            --ink: #F4F7FC;
+            --ink2: #9BA7BD;
+            --ink3: #5E6A82;
+            --gold: #E7B24C;
+            --cyan: #56D6E8;
+            --green: #46C99A;
+            --coral: #FF8A70;
+            --serif: Georgia, 'Times New Roman', serif;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: var(--sans);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased
+        }
+
+        .wrap {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 48px 28px 90px
+        }
+
+        .hdr {
+            text-align: center;
+            margin-bottom: 36px
+        }
+
+        .kicker {
+            font-size: 12px;
+            letter-spacing: .28em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+            margin-bottom: 16px
+        }
+
+        h1 {
+            font-family: var(--serif);
+            font-size: clamp(28px, 4.2vw, 42px);
+            font-weight: 700;
+            margin-bottom: 14px;
+            letter-spacing: -.01em
+        }
+
+        .hdr p {
+            color: var(--ink2);
+            font-size: 16px;
+            max-width: 680px;
+            margin: 0 auto
+        }
+
+        .concepts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 900px;
+            margin: 32px auto 0
+        }
+
+        @media(max-width:760px) {
+            .concepts {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .concept {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px 22px
+        }
+
+        .concept .tag {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--cyan)
+        }
+
+        .concept h4 {
+            font-family: var(--serif);
+            font-size: 17px;
+            margin: 8px 0 6px
+        }
+
+        .concept p {
+            font-size: 13px;
+            color: var(--ink2);
+            line-height: 1.55
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 1.05fr 1fr;
+            gap: 24px;
+            align-items: start;
+            margin-top: 44px
+        }
+
+        @media(max-width:900px) {
+            .layout {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .panel {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 28px;
+            margin-bottom: 20px
+        }
+
+        .panel h2 {
+            font-family: var(--serif);
+            font-size: 19px;
+            margin-bottom: 6px
+        }
+
+        .panel .sub {
+            color: var(--ink3);
+            font-size: 13px;
+            margin-bottom: 22px
+        }
+
+        .field {
+            margin-bottom: 22px
+        }
+
+        .field label {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 14px;
+            color: var(--ink2);
+            margin-bottom: 10px;
+            font-weight: 600
+        }
+
+        .field label b {
+            color: var(--ink);
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 700
+        }
+
+        .field .hint {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-top: 8px;
+            line-height: 1.5
+        }
+
+        input[type=range] {
+            width: 100%;
+            height: 4px;
+            border-radius: 100px;
+            background: var(--border);
+            appearance: none;
+            -webkit-appearance: none;
+            outline: none
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(231, 178, 76, .6);
+            border: 2px solid var(--bg)
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--gold);
+            cursor: pointer;
+            border: 2px solid var(--bg)
+        }
+
+        .phase-seg {
+            display: flex;
+            gap: 8px;
+            background: var(--bg);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 14px
+        }
+
+        .phase-seg button {
+            flex: 1;
+            background: transparent;
+            border: 0;
+            color: var(--ink3);
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 12px 6px;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: .2s;
+            line-height: 1.3
+        }
+
+        .phase-seg button.active {
+            background: var(--surface2);
+            color: var(--gold)
+        }
+
+        .phase-seg button span {
+            display: block;
+            font-size: 10.5px;
+            color: var(--ink3);
+            margin-top: 3px
+        }
+
+        .results {
+            position: sticky;
+            top: 24px
+        }
+
+        .r-title {
+            font-family: var(--serif);
+            font-size: 19px;
+            margin-bottom: 20px
+        }
+
+        .r-card {
+            background: linear-gradient(180deg, var(--surface2), var(--surface));
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 14px
+        }
+
+        .r-label {
+            font-size: 12.5px;
+            color: var(--ink3);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: .03em
+        }
+
+        .r-value {
+            font-family: var(--serif);
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--ink)
+        }
+
+        .r-sub {
+            font-size: 12.5px;
+            color: var(--ink3);
+            margin-top: 6px
+        }
+
+        .r-hero {
+            background: linear-gradient(135deg, rgba(231, 178, 76, .14), rgba(70, 201, 154, .06));
+            border: 1px solid rgba(231, 178, 76, .35);
+            border-radius: 16px;
+            padding: 26px;
+            margin-bottom: 14px;
+            text-align: center
+        }
+
+        .r-hero .r-label {
+            color: var(--gold)
+        }
+
+        .r-hero .r-value {
+            font-size: 36px;
+            color: var(--green)
+        }
+
+        .breakdown {
+            font-size: 13px
+        }
+
+        .brow {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border);
+            color: var(--ink2)
+        }
+
+        .brow:last-child {
+            border-bottom: 0
+        }
+
+        .brow b {
+            color: var(--ink)
+        }
+
+        .footnote {
+            font-size: 12px;
+            color: var(--ink3);
+            line-height: 1.6;
+            margin-top: 18px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="hdr">
+            <div class="kicker">El negocio, no solo el piloto</div>
+            <h1>¿Cuánto gana el negocio<br>en cada venta futura?</h1>
+            <p>Works es la prueba. Esto es lo que pasa cuando el producto ya probado se vende a un cliente nuevo — la
+                utilidad es del negocio, de ustedes dos.</p>
+        </div>
+
+        <div class="concepts">
+            <div class="concept">
+                <div class="tag">Concepto 1</div>
+                <h4>Costo de producción vs. precio de venta</h4>
+                <p>Lo que cuesta construir e instalar una unidad (COGS) es distinto de lo que se le cobra al cliente por
+                    tenerla terminada. La diferencia entre ambos es la utilidad.</p>
+            </div>
+            <div class="concept">
+                <div class="tag">Concepto 2</div>
+                <h4>Descreme de precios (Price Skimming)</h4>
+                <p>Sin competencia, se cobra un precio alto al segmento que puede y quiere pagarlo primero. El precio
+                    baja gradualmente conforme el mercado madura y aparece competencia.</p>
+            </div>
+        </div>
+
+        <div class="layout">
+            <div>
+                <div class="panel">
+                    <h2>Costo de producir una unidad nueva</h2>
+                    <div class="sub">Distinto al fee del piloto — aquí ya no se repite el desarrollo inicial, solo
+                        replicar lo que ya funciona.</div>
+
+                    <div class="field">
+                        <label>Hardware por unidad <b id="lbl-hw">$25,000</b></label>
+                        <input type="range" id="hw" min="15000" max="60000" step="500" value="25000">
+                        <div class="hint">Servidor + display + cámara + bocinas + gabinete, según la configuración que
+                            elija ese cliente.</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Instalación y puesta en marcha <b id="lbl-inst">$15,000</b></label>
+                        <input type="range" id="inst" min="5000" max="35000" step="500" value="15000">
+                        <div class="hint">Menor al fee del piloto de Works — ya no hay que resolver el diseño desde
+                            cero, solo replicarlo.</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Soporte anual por cliente <b id="lbl-sop">$48,000</b></label>
+                        <input type="range" id="sop" min="24000" max="72000" step="1000" value="48000">
+                        <div class="hint">12 meses de soporte y mantenimiento para ese cliente.</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h2>Estrategia de precio</h2>
+                    <div class="sub">En qué momento del mercado estamos vendiendo.</div>
+
+                    <div class="phase-seg" id="seg-fase">
+                        <button class="active" data-mult="3.2">Fase 1<span>Sin competencia</span></button>
+                        <button data-mult="2.1">Fase 2<span>Competencia emergente</span></button>
+                        <button data-mult="1.5">Fase 3<span>Mercado maduro</span></button>
+                    </div>
+
+                    <div class="field">
+                        <label>Multiplicador sobre el costo <b id="lbl-mult">3.2x</b></label>
+                        <input type="range" id="mult" min="1.2" max="5" step="0.1" value="3.2">
+                        <div class="hint">No es un dato de mercado — es un marco estratégico de referencia. No existe
+                            todavía un precio de mercado para este producto en México, así que este número lo defines tú
+                            según a quién le estés vendiendo.</div>
+                    </div>
+
+                    <div class="field">
+                        <label>Unidades vendidas por año <b id="lbl-vol">4</b></label>
+                        <input type="range" id="vol" min="1" max="30" step="1" value="4">
+                    </div>
+                </div>
+            </div>
+
+            <div class="results">
+                <div class="r-title">Lo que esto significa</div>
+
+                <div class="r-hero">
+                    <div class="r-label">Utilidad del negocio por unidad</div>
+                    <div class="r-value" id="r-utilidad">—</div>
+                    <div class="r-sub">Precio de venta menos costo de producción</div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Costo de producción por unidad (COGS)</div>
+                    <div class="r-value" id="r-cogs">—</div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Precio de venta sugerido al cliente</div>
+                    <div class="r-value" id="r-pvp" style="color:var(--gold)">—</div>
+                    <div class="r-sub" id="r-pvp-sub"></div>
+                </div>
+
+                <div class="r-card">
+                    <div class="r-label">Utilidad proyectada del negocio — al año</div>
+                    <div class="r-value" id="r-anual" style="color:var(--green)">—</div>
+                    <div class="breakdown" id="r-breakdown"></div>
+                </div>
+
+                <div class="footnote">
+                    Esta utilidad es del <strong>negocio</strong> en conjunto — no representa un reparto de porcentajes
+                    entre socios, que es una decisión aparte. El fee del piloto en Works ($45,000–$65,000 MXN) no se
+                    repite aquí: fue el costo de construir el producto por primera vez. Esto calcula solo las ventas
+                    <strong>posteriores</strong> a clientes nuevos.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const $ = id => document.getElementById(id);
+        const fmt = n => '$' + Math.round(n).toLocaleString('en-US');
+
+        document.querySelectorAll('#seg-fase button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#seg-fase button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                $('mult').value = btn.dataset.mult;
+                calc();
+            });
+        });
+
+        ['hw', 'inst', 'sop', 'mult', 'vol'].forEach(id => {
+            $(id).addEventListener('input', calc);
+        });
+
+        function calc() {
+            const hw = parseFloat($('hw').value);
+            const inst = parseFloat($('inst').value);
+            const sop = parseFloat($('sop').value);
+            const mult = parseFloat($('mult').value);
+            const vol = parseFloat($('vol').value);
+
+            $('lbl-hw').textContent = fmt(hw);
+            $('lbl-inst').textContent = fmt(inst);
+            $('lbl-sop').textContent = fmt(sop);
+            $('lbl-mult').textContent = mult.toFixed(1) + 'x';
+            $('lbl-vol').textContent = vol;
+
+            const cogs = hw + inst + sop;
+            const pvp = cogs * mult;
+            const utilidad = pvp - cogs;
+            const utilidadAnual = utilidad * vol;
+
+            $('r-cogs').textContent = fmt(cogs);
+            $('r-pvp').textContent = fmt(pvp);
+            $('r-pvp-sub').textContent = mult.toFixed(1) + 'x sobre el costo de producción';
+            $('r-utilidad').textContent = fmt(utilidad);
+            $('r-anual').textContent = fmt(utilidadAnual);
+
+            $('r-breakdown').innerHTML = `
+      <div class="brow"><span>Utilidad por unidad</span><b>${fmt(utilidad)}</b></div>
+      <div class="brow"><span>Unidades al año</span><b>${vol}</b></div>
+      <div class="brow"><span>Total ingresos por ventas</span><b>${fmt(pvp * vol)}</b></div>
+    `;
+        }
+
+        calc();
+    </script>
+</body>
+
+</html>

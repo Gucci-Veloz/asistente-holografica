@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recepción IA — Panel de Administración</title>
+    <style>
+        /* ── Variables de marca ── */
+        :root {
+            --bg: #070A12;
+            --bg2: #0B111C;
+            --surface: #0E131F;
+            --surface2: #131C2C;
+            --border: #232D40;
+            --ink: #F4F7FC;
+            --ink2: #9BA7BD;
+            --ink3: #5E6A82;
+            --gold: #E7B24C;
+            --cyan: #56D6E8;
+            --green: #46C99A;
+            --coral: #FF8A70;
+            --serif: Georgia, 'Times New Roman', serif;
+            --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --sidebar-w: 260px;
+            --radius: 14px;
+        }
+
+        /* ── Reset ── */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 15px;
+        }
+
+        body {
+            font-family: var(--sans);
+            background: var(--bg);
+            color: var(--ink);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        a {
+            color: var(--cyan);
+            text-decoration: none;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            font-family: var(--sans);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: 100vh;
+            background: var(--bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+            transition: transform .3s ease;
+        }
+
+        .sidebar-logo {
+            padding: 28px 24px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sidebar-logo .logo-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-logo .logo-text {
+            font-family: var(--serif);
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--gold);
+            line-height: 1.2;
+        }
+
+        .sidebar-logo .logo-sub {
+            font-size: 10.5px;
+            color: var(--ink3);
+            letter-spacing: .04em;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: 10px;
+            color: var(--ink2);
+            font-size: 13.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s ease;
+            border-left: 3px solid transparent;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: var(--surface);
+            color: var(--ink);
+        }
+
+        .nav-item.active {
+            background: var(--surface2);
+            color: var(--ink);
+            border-left-color: var(--cyan);
+        }
+
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            opacity: .7;
+        }
+
+        .nav-item.active svg {
+            opacity: 1;
+        }
+
+        .nav-item .badge {
+            margin-left: auto;
+            background: var(--coral);
+            color: #fff;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 10px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 18px 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sf-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), var(--coral));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--bg);
+        }
+
+        .sf-info {
+            flex: 1;
+        }
+
+        .sf-name {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .sf-role {
+            font-size: 10.5px;
+            color: var(--ink3);
+        }
+
+        /* ── Main Content ── */
+        .main {
+            margin-left: var(--sidebar-w);
+            flex: 1;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            height: 64px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            background: var(--bg);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-family: var(--serif);
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .topbar-date {
+            font-size: 12.5px;
+            color: var(--ink3);
+        }
+
+        .topbar-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--green);
+        }
+
+        .topbar-status .dot {
+            width: 7px;
+            height: 7px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: .4;
+            }
+        }
+
+        /* ── Secciones / Vistas ── */
+        .view {
+            display: none;
+            padding: 32px;
+            animation: fadeIn .35s ease;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            font-family: var(--serif);
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .section-sub {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-bottom: 28px;
+        }
+
+        /* ── Stat Cards (Home) ── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 22px;
+            transition: transform .2s ease, border-color .2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--ink3);
+        }
+
+        .stat-card .sc-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-card .sc-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stat-card .sc-label {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .stat-card .sc-value {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-card .sc-trend {
+            font-size: 11.5px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 0 0 0 80px;
+            opacity: .06;
+        }
+
+        /* ── Colores de stat ── */
+        .sc-cyan .sc-icon {
+            background: rgba(86, 214, 232, .12);
+        }
+
+        .sc-cyan .sc-value {
+            color: var(--cyan);
+        }
+
+        .sc-cyan::after {
+            background: var(--cyan);
+        }
+
+        .sc-green .sc-icon {
+            background: rgba(70, 201, 154, .12);
+        }
+
+        .sc-green .sc-value {
+            color: var(--green);
+        }
+
+        .sc-green::after {
+            background: var(--green);
+        }
+
+        .sc-gold .sc-icon {
+            background: rgba(231, 178, 76, .12);
+        }
+
+        .sc-gold .sc-value {
+            color: var(--gold);
+        }
+
+        .sc-gold::after {
+            background: var(--gold);
+        }
+
+        .sc-coral .sc-icon {
+            background: rgba(255, 138, 112, .12);
+        }
+
+        .sc-coral .sc-value {
+            color: var(--coral);
+        }
+
+        .sc-coral::after {
+            background: var(--coral);
+        }
+
+        /* ── Home: paneles inferiores ── */
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+        }
+
+        .panel-title {
+            font-size: 13.5px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .panel-title .pt-link {
+            font-size: 11.5px;
+            color: var(--cyan);
+            cursor: pointer;
+        }
+
+        /* ── Tabla de miembros ── */
+        .members-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .members-table th {
+            text-align: left;
+            font-size: 11px;
+            color: var(--ink3);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .members-table td {
+            padding: 14px 12px;
+            font-size: 13.5px;
+            border-bottom: 1px solid rgba(35, 45, 64, .4);
+            vertical-align: middle;
+        }
+
+        .members-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .members-table tr {
+            transition: background .15s ease;
+        }
+
+        .members-table tr:hover td {
+            background: var(--surface2);
+        }
+
+        .member-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--bg);
+            flex-shrink: 0;
+        }
+
+        .member-name {
+            font-weight: 500;
+        }
+
+        .member-email {
+            font-size: 11.5px;
+            color: var(--ink3);
+        }
+
+        /* ── Badges ── */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: rgba(70, 201, 154, .12);
+            color: var(--green);
+        }
+
+        .badge-coral {
+            background: rgba(255, 138, 112, .12);
+            color: var(--coral);
+        }
+
+        .badge-gold {
+            background: rgba(231, 178, 76, .12);
+            color: var(--gold);
+        }
+
+        .badge-cyan {
+            background: rgba(86, 214, 232, .12);
+            color: var(--cyan);
+        }
+
+        /* ── Alertas de pago ── */
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .alert-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            transition: transform .2s ease, border-color .2s ease;
+        }
+
+        .alert-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--ink3);
+        }
+
+        .alert-card .alert-avatar {
+            flex-shrink: 0;
+        }
+
+        .alert-card .alert-info {
+            flex: 1;
+        }
+
+        .alert-card .alert-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .alert-card .alert-plan {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-bottom: 10px;
+        }
+
+        .alert-card .alert-days {
+            font-family: var(--serif);
+            font-size: 26px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .alert-card .alert-label {
+            font-size: 11px;
+            color: var(--ink3);
+            margin-top: 4px;
+        }
+
+        .alert-urgent {
+            border-color: rgba(255, 138, 112, .3);
+        }
+
+        .alert-urgent .alert-days {
+            color: var(--coral);
+        }
+
+        .alert-warn .alert-days {
+            color: var(--gold);
+        }
+
+        .alert-ok .alert-days {
+            color: var(--green);
+        }
+
+        /* ── Timeline de accesos ── */
+        .access-timeline {
+            position: relative;
+            padding-left: 28px;
+        }
+
+        .access-timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 6px;
+            bottom: 6px;
+            width: 2px;
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        .access-entry {
+            position: relative;
+            padding: 14px 0 14px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            transition: background .15s ease;
+            border-radius: 10px;
+            padding-right: 14px;
+        }
+
+        .access-entry:hover {
+            background: var(--surface);
+        }
+
+        .access-entry::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--surface2);
+            border: 2px solid var(--cyan);
+        }
+
+        .access-entry.exit::before {
+            border-color: var(--ink3);
+        }
+
+        .access-time {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink2);
+            min-width: 52px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .access-name {
+            flex: 1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .access-type {
+            font-size: 11.5px;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .type-entry {
+            background: rgba(86, 214, 232, .1);
+            color: var(--cyan);
+        }
+
+        .type-exit {
+            background: rgba(94, 106, 130, .12);
+            color: var(--ink3);
+        }
+
+        .type-visitor {
+            background: rgba(231, 178, 76, .1);
+            color: var(--gold);
+        }
+
+        /* ── Paquetería ── */
+        .packages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .pkg-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            gap: 16px;
+            transition: transform .2s ease;
+        }
+
+        .pkg-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .pkg-thumb {
+            width: 64px;
+            height: 64px;
+            background: var(--surface2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .pkg-thumb svg {
+            width: 28px;
+            height: 28px;
+            color: var(--ink3);
+        }
+
+        .pkg-info {
+            flex: 1;
+        }
+
+        .pkg-dest {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .pkg-time {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-bottom: 4px;
+        }
+
+        .pkg-carrier {
+            font-size: 12px;
+            color: var(--ink3);
+            margin-bottom: 10px;
+        }
+
+        .pkg-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Notificaciones ── */
+        .notif-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .notif-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 10px;
+            transition: background .15s ease;
+        }
+
+        .notif-item:hover {
+            background: var(--surface);
+        }
+
+        .notif-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notif-icon.wa {
+            background: rgba(37, 211, 102, .12);
+        }
+
+        .notif-icon.wa svg {
+            color: #25D366;
+        }
+
+        .notif-icon.system {
+            background: rgba(86, 214, 232, .12);
+        }
+
+        .notif-icon.system svg {
+            color: var(--cyan);
+        }
+
+        .notif-icon.alert {
+            background: rgba(231, 178, 76, .12);
+        }
+
+        .notif-icon.alert svg {
+            color: var(--gold);
+        }
+
+        .notif-text {
+            flex: 1;
+        }
+
+        .notif-msg {
+            font-size: 13.5px;
+        }
+
+        .notif-msg b {
+            font-weight: 600;
+        }
+
+        .notif-time {
+            font-size: 11.5px;
+            color: var(--ink3);
+            margin-top: 2px;
+        }
+
+        /* ── Enrolamiento ── */
+        .enroll-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 900px;
+        }
+
+        .enroll-form,
+        .enroll-camera {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: var(--ink3);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--ink);
+            font-size: 14px;
+            font-family: var(--sans);
+            transition: border-color .2s ease;
+            outline: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--cyan);
+        }
+
+        .form-input::placeholder {
+            color: var(--ink3);
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235E6A82' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .camera-preview {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: var(--bg);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .camera-preview svg {
+            width: 48px;
+            height: 48px;
+            color: var(--ink3);
+        }
+
+        .camera-preview span {
+            font-size: 13px;
+            color: var(--ink3);
+        }
+
+        .camera-hint {
+            font-size: 12px;
+            color: var(--ink3);
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--cyan), var(--green));
+            color: var(--bg);
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 10px;
+            transition: transform .15s ease, box-shadow .15s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(86, 214, 232, .2);
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ink3);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .stat-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .home-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .enroll-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main {
+                margin-left: 0;
+            }
+
+            .topbar {
+                padding: 0 20px;
+            }
+
+            .view {
+                padding: 20px;
+            }
+
+            .stat-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .menu-toggle {
+                display: flex !important;
+            }
+        }
+
+        /* ── Menu toggle (mobile) ── */
+        .menu-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: none;
+            border: none;
+            color: var(--ink);
+            cursor: pointer;
+        }
+
+        .menu-toggle svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        /* ── Animación de conteo ── */
+        .count-up {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════ SIDEBAR ═══════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#070A12" stroke-width="2.2" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12" />
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662" />
+                </svg>
+            </div>
+            <div>
+                <div class="logo-text">Recepción IA</div>
+                <div class="logo-sub">Panel de Administración</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-view="home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                    <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+                Vista General
+            </div>
+            <div class="nav-item" data-view="miembros">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Miembros
+            </div>
+            <div class="nav-item" data-view="alertas">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                    <line x1="12" y1="9" x2="12" y2="13" />
+                    <line x1="12" y1="17" x2="12.01" y2="17" />
+                </svg>
+                Alertas de Pago
+                <span class="badge">4</span>
+            </div>
+            <div class="nav-item" data-view="accesos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Accesos del Día
+            </div>
+            <div class="nav-item" data-view="paqueteria">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path
+                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
+                Paquetería
+                <span class="badge" style="background:var(--gold)">3</span>
+            </div>
+            <div class="nav-item" data-view="notificaciones">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+                Notificaciones
+            </div>
+            <div class="nav-item" data-view="enrolamiento">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                    stroke-linejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="8.5" cy="7" r="4" />
+                    <line x1="20" y1="8" x2="20" y2="14" />
+                    <line x1="23" y1="11" x2="17" y2="11" />
+                </svg>
+                Nuevo Miembro
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="sf-avatar">CP</div>
+            <div class="sf-info">
+                <div class="sf-name">Coworking Piloto</div>
+                <div class="sf-role">Plan Profesional</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ═══════════ MAIN ═══════════ -->
+    <div class="main">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div style="display:flex;align-items:center;gap:14px;">
+                <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <line x1="3" y1="12" x2="21" y2="12" />
+                        <line x1="3" y1="18" x2="21" y2="18" />
+                    </svg>
+                </button>
+                <span class="topbar-title" id="topbar-title">Vista General</span>
+            </div>
+            <div class="topbar-right">
+                <span class="topbar-date" id="topbar-date"></span>
+                <div class="topbar-status">
+                    <span class="dot"></span>
+                    Sistema activo
+                </div>
+            </div>
+        </header>
+
+        <!-- ─── HOME ─── -->
+        <section class="view active" id="view-home">
+            <h1 class="section-title">Buenos días, Administrador</h1>
+            <p class="section-sub">Resumen del día en Coworking Piloto</p>
+
+            <div class="stat-grid">
+                <div class="stat-card sc-cyan">
+                    <div class="sc-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                            <circle cx="9" cy="7" r="4" />
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                        </svg>
+                    </div>
+                    <div class="sc-label">Miembros Activos</div>
+                    <div class="sc-value count-up" data-target="24">0</div>
+                    <div class="sc-trend" style="color:var(--green)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                        </svg>
+                        +3 este mes
+                    </div>
+                </div>
+                <div class="stat-card sc-green">
+                    <div class="sc-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                            <polyline points="10 17 15 12 10 7" />
+                            <line x1="15" y1="12" x2="3" y2="12" />
+                        </svg>
+                    </div>
+                    <div class="sc-label">Visitas Hoy</div>
+                    <div class="sc-value count-up" data-target="8">0</div>
+                    <div class="sc-trend" style="color:var(--ink3)">
+                        Promedio: 6/día
+                    </div>
+                </div>
+                <div class="stat-card sc-gold">
+                    <div class="sc-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                    </div>
+                    <div class="sc-label">Paquetes Pendientes</div>
+                    <div class="sc-value count-up" data-target="3">0</div>
+                    <div class="sc-trend" style="color:var(--gold)">
+                        1 desde ayer
+                    </div>
+                </div>
+                <div class="stat-card sc-coral">
+                    <div class="sc-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--coral)" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                    </div>
+                    <div class="sc-label">Alertas de Pago</div>
+                    <div class="sc-value count-up" data-target="4">0</div>
+                    <div class="sc-trend" style="color:var(--coral)">
+                        2 urgentes (≤3 días)
+                    </div>
+                </div>
+            </div>
+
+            <div class="home-grid">
+                <!-- Últimos accesos rápido -->
+                <div class="panel">
+                    <div class="panel-title">
+                        Últimos Accesos
+                        <span class="pt-link" onclick="navigateTo('accesos')">Ver todo →</span>
+                    </div>
+                    <div id="home-access-preview"></div>
+                </div>
+                <!-- Notificaciones recientes -->
+                <div class="panel">
+                    <div class="panel-title">
+                        Notificaciones Recientes
+                        <span class="pt-link" onclick="navigateTo('notificaciones')">Ver todo →</span>
+                    </div>
+                    <div id="home-notif-preview"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ─── MIEMBROS ─── -->
+        <section class="view" id="view-miembros">
+            <h1 class="section-title">Estado de Miembros</h1>
+            <p class="section-sub">24 miembros registrados · 20 al corriente · 4 con adeudo</p>
+            <div class="panel" style="padding:0; overflow-x:auto;">
+                <table class="members-table">
+                    <thead>
+                        <tr>
+                            <th>Miembro</th>
+                            <th>Plan</th>
+                            <th>Estado</th>
+                            <th>Último Acceso</th>
+                            <th>Rostro Registrado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="members-tbody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ─── ALERTAS DE PAGO ─── -->
+        <section class="view" id="view-alertas">
+            <h1 class="section-title">Alertas de Pago</h1>
+            <p class="section-sub">Miembros con corte de pago próximo — se envían recordatorios automáticos por WhatsApp
+            </p>
+            <div class="alerts-grid" id="alerts-grid"></div>
+        </section>
+
+        <!-- ─── ACCESOS ─── -->
+        <section class="view" id="view-accesos">
+            <h1 class="section-title">Registro de Accesos</h1>
+            <p class="section-sub">Hoy — reconocimiento facial en tiempo real</p>
+            <div class="panel">
+                <div class="access-timeline" id="access-timeline"></div>
+            </div>
+        </section>
+
+        <!-- ─── PAQUETERÍA ─── -->
+        <section class="view" id="view-paqueteria">
+            <h1 class="section-title">Gestión de Paquetería</h1>
+            <p class="section-sub">Paquetes recibidos — se notifica al destinatario por WhatsApp automáticamente</p>
+            <div class="packages-grid" id="packages-grid"></div>
+        </section>
+
+        <!-- ─── NOTIFICACIONES ─── -->
+        <section class="view" id="view-notificaciones">
+            <h1 class="section-title">Notificaciones Enviadas</h1>
+            <p class="section-sub">Log de mensajes enviados por WhatsApp y alertas del sistema</p>
+            <div class="panel">
+                <div class="notif-list" id="notif-list"></div>
+            </div>
+        </section>
+
+        <!-- ─── ENROLAMIENTO ─── -->
+        <section class="view" id="view-enrolamiento">
+            <h1 class="section-title">Nuevo Miembro</h1>
+            <p class="section-sub">Registro de datos y captura de rostro para acceso biométrico</p>
+            <div class="enroll-layout">
+                <div class="enroll-form">
+                    <h3 style="font-size:15px;margin-bottom:22px;font-weight:600;">Datos del Miembro</h3>
+                    <div class="form-group">
+                        <label class="form-label">Nombre Completo</label>
+                        <input class="form-input" type="text" placeholder="Ej. Ana Rodríguez García">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Correo Electrónico</label>
+                        <input class="form-input" type="email" placeholder="ana@ejemplo.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Teléfono (WhatsApp)</label>
+                        <input class="form-input" type="tel" placeholder="+52 55 1234 5678">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tipo de Membresía</label>
+                        <select class="form-input form-select">
+                            <option>Escritorio Flex</option>
+                            <option>Escritorio Fijo</option>
+                            <option>Oficina Privada</option>
+                            <option>Sala de Juntas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fecha de Inicio</label>
+                        <input class="form-input" type="date">
+                    </div>
+                    <button class="btn-primary"
+                        onclick="alert('Este es un mockup visual — la funcionalidad real está en desarrollo.')">
+                        Registrar Miembro
+                    </button>
+                </div>
+                <div class="enroll-camera">
+                    <h3 style="font-size:15px;margin-bottom:22px;font-weight:600;">Captura de Rostro</h3>
+                    <div class="camera-preview">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                            <circle cx="12" cy="13" r="4" />
+                        </svg>
+                        <span>Cámara del kiosco</span>
+                        <span style="font-size:11px;color:var(--ink3)">Presione para capturar</span>
+                    </div>
+                    <div class="camera-hint">
+                        El sistema captura automáticamente el rostro del miembro al posicionarse frente al kiosco.<br>
+                        Se almacenan <b>3 tomas</b> en diferentes ángulos para mayor precisión.<br><br>
+                        <span style="color:var(--green);">● Procesamiento 100% local — sin nube</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        /* ═══════════ DATOS FICTICIOS ═══════════ */
+        var COLORS = ['#56D6E8', '#46C99A', '#E7B24C', '#FF8A70', '#8B7CF6', '#F472B6', '#34D399', '#FBBF24', '#60A5FA', '#A78BFA'];
+
+        var MEMBERS = [
+            { name: 'Ana Rodríguez', email: 'ana@correo.mx', plan: 'Oficina Privada', status: 'corriente', lastAccess: 'Hoy, 08:12', color: '#56D6E8' },
+            { name: 'Carlos Mendoza', email: 'carlos@correo.mx', plan: 'Escritorio Fijo', status: 'corriente', lastAccess: 'Hoy, 09:35', color: '#46C99A' },
+            { name: 'María López', email: 'maria@correo.mx', plan: 'Escritorio Flex', status: 'moroso', lastAccess: 'Hace 3 días', color: '#E7B24C' },
+            { name: 'Juan Pérez', email: 'juan@correo.mx', plan: 'Oficina Privada', status: 'corriente', lastAccess: 'Hoy, 07:48', color: '#FF8A70' },
+            { name: 'Sofía Herrera', email: 'sofia@correo.mx', plan: 'Escritorio Fijo', status: 'corriente', lastAccess: 'Hoy, 10:03', color: '#8B7CF6' },
+            { name: 'Diego García', email: 'diego@correo.mx', plan: 'Sala de Juntas', status: 'moroso', lastAccess: 'Hace 5 días', color: '#F472B6' },
+            { name: 'Valentina Torres', email: 'valentina@correo.mx', plan: 'Escritorio Flex', status: 'corriente', lastAccess: 'Ayer, 17:22', color: '#34D399' },
+            { name: 'Roberto Sánchez', email: 'roberto@correo.mx', plan: 'Oficina Privada', status: 'moroso', lastAccess: 'Hoy, 11:15', color: '#FBBF24' },
+            { name: 'Camila Flores', email: 'camila@correo.mx', plan: 'Escritorio Fijo', status: 'corriente', lastAccess: 'Hoy, 08:57', color: '#60A5FA' },
+            { name: 'Andrés Morales', email: 'andres@correo.mx', plan: 'Escritorio Flex', status: 'moroso', lastAccess: 'Hace 2 días', color: '#A78BFA' }
+        ];
+
+        var ALERTS = [
+            { name: 'María López', plan: 'Escritorio Flex', days: 1, color: '#E7B24C' },
+            { name: 'Roberto Sánchez', plan: 'Oficina Privada', days: 3, color: '#FBBF24' },
+            { name: 'Diego García', plan: 'Sala de Juntas', days: 5, color: '#F472B6' },
+            { name: 'Andrés Morales', plan: 'Escritorio Flex', days: 7, color: '#A78BFA' }
+        ];
+
+        var ACCESSES = [
+            { time: '11:15', name: 'Roberto Sánchez', type: 'entry', color: '#FBBF24' },
+            { time: '10:42', name: 'Laura Vega', type: 'visitor', color: '#FF8A70' },
+            { time: '10:03', name: 'Sofía Herrera', type: 'entry', color: '#8B7CF6' },
+            { time: '09:35', name: 'Carlos Mendoza', type: 'entry', color: '#46C99A' },
+            { time: '09:18', name: 'Pedro Ruiz', type: 'visitor', color: '#34D399' },
+            { time: '08:57', name: 'Camila Flores', type: 'entry', color: '#60A5FA' },
+            { time: '08:30', name: 'Valentina Torres', type: 'exit', color: '#34D399' },
+            { time: '08:12', name: 'Ana Rodríguez', type: 'entry', color: '#56D6E8' },
+            { time: '07:48', name: 'Juan Pérez', type: 'entry', color: '#FF8A70' }
+        ];
+
+        var PACKAGES = [
+            { dest: 'Ana Rodríguez', carrier: 'FedEx', time: '10:30', status: 'pendiente', color: '#56D6E8' },
+            { dest: 'Carlos Mendoza', carrier: 'DHL', time: '09:15', status: 'pendiente', color: '#46C99A' },
+            { dest: 'Sofía Herrera', carrier: 'Estafeta', time: '08:45', status: 'entregado', color: '#8B7CF6' },
+            { dest: 'Juan Pérez', carrier: 'Amazon Logística', time: '11:02', status: 'pendiente', color: '#FF8A70' },
+            { dest: 'Camila Flores', carrier: 'UPS', time: 'Ayer 16:20', status: 'entregado', color: '#60A5FA' }
+        ];
+
+        var NOTIFICATIONS = [
+            { type: 'wa', msg: 'Visita anunciada a <b>Juan Pérez</b>: "Laura Vega está aquí"', time: '10:42' },
+            { type: 'wa', msg: 'Paquete notificado a <b>Ana Rodríguez</b>: FedEx recibido', time: '10:31' },
+            { type: 'alert', msg: 'Alerta de pago enviada a <b>María López</b>: vence mañana', time: '10:00' },
+            { type: 'wa', msg: 'Paquete notificado a <b>Carlos Mendoza</b>: DHL recibido', time: '09:16' },
+            { type: 'system', msg: 'Acceso concedido: <b>Sofía Herrera</b> — reconocimiento facial', time: '09:03' },
+            { type: 'wa', msg: 'Recordatorio de pago enviado a <b>Roberto Sánchez</b>: 3 días restantes', time: '08:30' },
+            { type: 'system', msg: 'Puerta principal abierta para <b>Ana Rodríguez</b>', time: '08:12' },
+            { type: 'alert', msg: 'Alerta de pago enviada a <b>Diego García</b>: 5 días restantes', time: '08:00' },
+            { type: 'wa', msg: 'Bienvenida enviada a <b>Valentina Torres</b>: acceso registrado', time: 'Ayer 17:22' },
+            { type: 'system', msg: 'Nuevo miembro registrado: <b>Andrés Morales</b> — rostro capturado', time: 'Ayer 14:10' }
+        ];
+
+        /* ═══════════ FUNCIONES DE RENDER ═══════════ */
+
+        /* Iniciales de un nombre */
+        function initials(name) {
+            return name.split(' ').map(function (w) { return w[0] }).join('').substring(0, 2).toUpperCase();
+        }
+
+        /* Crear avatar HTML */
+        function avatarHtml(name, color, size) {
+            size = size || 34;
+            return '<div class="avatar" style="width:' + size + 'px;height:' + size + 'px;background:' + color + ';font-size:' + (size * 0.35) + 'px">' + initials(name) + '</div>';
+        }
+
+        /* ── Tabla de miembros ── */
+        function renderMembers() {
+            var tbody = document.getElementById('members-tbody');
+            var html = '';
+            MEMBERS.forEach(function (m) {
+                var statusClass = m.status === 'corriente' ? 'badge-green' : 'badge-coral';
+                var statusText = m.status === 'corriente' ? '● Al corriente' : '● Moroso';
+                html += '<tr>' +
+                    '<td><div class="member-cell">' + avatarHtml(m.name, m.color) +
+                    '<div><div class="member-name">' + m.name + '</div><div class="member-email">' + m.email + '</div></div>' +
+                    '</div></td>' +
+                    '<td style="color:var(--ink2)">' + m.plan + '</td>' +
+                    '<td><span class="badge-status ' + statusClass + '">' + statusText + '</span></td>' +
+                    '<td style="color:var(--ink3)">' + m.lastAccess + '</td>' +
+                    '<td><span class="badge-status badge-cyan">✓ Registrado</span></td>' +
+                    '</tr>';
+            });
+            tbody.innerHTML = html;
+        }
+
+        /* ── Alertas de pago ── */
+        function renderAlerts() {
+            var grid = document.getElementById('alerts-grid');
+            var html = '';
+            ALERTS.forEach(function (a) {
+                var urgency = a.days <= 3 ? 'alert-urgent' : (a.days <= 5 ? 'alert-warn' : 'alert-ok');
+                html += '<div class="alert-card ' + urgency + '">' +
+                    '<div class="alert-avatar">' + avatarHtml(a.name, a.color, 44) + '</div>' +
+                    '<div class="alert-info">' +
+                    '<div class="alert-name">' + a.name + '</div>' +
+                    '<div class="alert-plan">' + a.plan + '</div>' +
+                    '<div class="alert-days">' + a.days + ' día' + (a.days !== 1 ? 's' : '') + '</div>' +
+                    '<div class="alert-label">para corte de pago</div>' +
+                    '</div>' +
+                    '</div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        /* ── Timeline de accesos ── */
+        function renderAccesses(container, limit) {
+            var target = typeof container === 'string' ? document.getElementById(container) : container;
+            var data = limit ? ACCESSES.slice(0, limit) : ACCESSES;
+            var html = '<div class="access-timeline">';
+            data.forEach(function (a) {
+                var typeClass = a.type === 'entry' ? 'type-entry' : (a.type === 'visitor' ? 'type-visitor' : 'type-exit');
+                var typeLabel = a.type === 'entry' ? 'Entrada' : (a.type === 'visitor' ? 'Visita' : 'Salida');
+                var entryClass = a.type === 'exit' ? ' exit' : '';
+                html += '<div class="access-entry' + entryClass + '">' +
+                    '<span class="access-time">' + a.time + '</span>' +
+                    avatarHtml(a.name, a.color, 32) +
+                    '<span class="access-name">' + a.name + '</span>' +
+                    '<span class="access-type ' + typeClass + '">' + typeLabel + '</span>' +
+                    '</div>';
+            });
+            html += '</div>';
+            target.innerHTML = html;
+        }
+
+        /* ── Paquetería ── */
+        function renderPackages() {
+            var grid = document.getElementById('packages-grid');
+            var html = '';
+            var pkgSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>';
+            PACKAGES.forEach(function (p) {
+                var statusClass = p.status === 'entregado' ? 'badge-green' : 'badge-gold';
+                var statusIcon = p.status === 'entregado' ? '✓ Entregado' : '◷ Pendiente';
+                html += '<div class="pkg-card">' +
+                    '<div class="pkg-thumb" style="border:1px solid ' + p.color + '33">' + pkgSvg + '</div>' +
+                    '<div class="pkg-info">' +
+                    '<div class="pkg-dest">' + p.dest + '</div>' +
+                    '<div class="pkg-carrier">' + p.carrier + '</div>' +
+                    '<div class="pkg-time">Recibido: ' + p.time + '</div>' +
+                    '<div class="pkg-status"><span class="badge-status ' + statusClass + '">' + statusIcon + '</span></div>' +
+                    '</div>' +
+                    '</div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        /* ── Notificaciones ── */
+        function renderNotifications(container, limit) {
+            var target = typeof container === 'string' ? document.getElementById(container) : container;
+            var data = limit ? NOTIFICATIONS.slice(0, limit) : NOTIFICATIONS;
+            var html = '';
+            data.forEach(function (n) {
+                var iconClass = n.type;
+                var iconSvg;
+                if (n.type === 'wa') {
+                    iconSvg = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>';
+                } else if (n.type === 'alert') {
+                    iconSvg = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+                } else {
+                    iconSvg = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+                }
+                html += '<div class="notif-item">' +
+                    '<div class="notif-icon ' + iconClass + '">' + iconSvg + '</div>' +
+                    '<div class="notif-text">' +
+                    '<div class="notif-msg">' + n.msg + '</div>' +
+                    '<div class="notif-time">' + n.time + '</div>' +
+                    '</div>' +
+                    '</div>';
+            });
+            target.innerHTML = html;
+        }
+
+        /* ═══════════ NAVEGACIÓN ═══════════ */
+        var TITLES = {
+            home: 'Vista General',
+            miembros: 'Estado de Miembros',
+            alertas: 'Alertas de Pago',
+            accesos: 'Accesos del Día',
+            paqueteria: 'Paquetería',
+            notificaciones: 'Notificaciones',
+            enrolamiento: 'Nuevo Miembro'
+        };
+
+        function navigateTo(viewId) {
+            /* Ocultar todas las vistas */
+            document.querySelectorAll('.view').forEach(function (v) { v.classList.remove('active'); });
+            /* Mostrar la solicitada */
+            var target = document.getElementById('view-' + viewId);
+            if (target) target.classList.add('active');
+            /* Actualizar sidebar */
+            document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+            var navItem = document.querySelector('.nav-item[data-view="' + viewId + '"]');
+            if (navItem) navItem.classList.add('active');
+            /* Actualizar título */
+            document.getElementById('topbar-title').textContent = TITLES[viewId] || viewId;
+            /* Cerrar sidebar en móvil */
+            document.getElementById('sidebar').classList.remove('open');
+        }
+
+        /* Clicks en sidebar */
+        document.querySelectorAll('.nav-item').forEach(function (item) {
+            item.addEventListener('click', function () {
+                navigateTo(this.getAttribute('data-view'));
+            });
+        });
+
+        /* ═══════════ ANIMACIÓN DE CONTEO ═══════════ */
+        function animateCountUp() {
+            document.querySelectorAll('.count-up').forEach(function (el) {
+                var target = parseInt(el.getAttribute('data-target'));
+                var duration = 1200;
+                var startTime = null;
+                function step(ts) {
+                    if (!startTime) startTime = ts;
+                    var progress = Math.min((ts - startTime) / duration, 1);
+                    var eased = 1 - Math.pow(1 - progress, 3);
+                    el.textContent = Math.round(target * eased);
+                    if (progress < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        }
+
+        /* ═══════════ INICIALIZACIÓN ═══════════ */
+        function init() {
+            /* Fecha en topbar */
+            var now = new Date();
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var dateStr = now.toLocaleDateString('es-MX', options);
+            document.getElementById('topbar-date').textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+
+            /* Renderizar datos */
+            renderMembers();
+            renderAlerts();
+            renderAccesses('access-timeline');
+            renderAccesses('home-access-preview', 4);
+            renderPackages();
+            renderNotifications('notif-list');
+            renderNotifications('home-notif-preview', 4);
+
+            /* Animar contadores */
+            animateCountUp();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+
+</html>

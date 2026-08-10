@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arquitectura del Sistema — Recepción IA</title>
+<style>
+:root {
+  --bg: #070A12;
+  --bg2: #0B111C;
+  --surface: #0E131F;
+  --surface2: #131C2C;
+  --border: #232D40;
+  --ink: #F4F7FC;
+  --ink2: #9BA7BD;
+  --ink3: #5E6A82;
+  --gold: #E7B24C;
+  --cyan: #56D6E8;
+  --green: #46C99A;
+  --coral: #FF8A70;
+  --purple: #A78BFA;
+  --serif: Georgia, 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background-color: var(--bg);
+  color: var(--ink);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* Navbar */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(7, 10, 18, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 70px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.brand-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--cyan), var(--green));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand-icon svg { width: 18px; height: 18px; color: var(--bg); }
+.brand-text {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--gold);
+}
+.brand-sub { font-size: 11px; color: var(--ink2); letter-spacing: 0.05em; text-transform: uppercase; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--bg2);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.tab {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.tab:hover { color: var(--ink); }
+.tab.active {
+  background: var(--surface2);
+  color: var(--cyan);
+}
+
+/* Contenedores Principales */
+.view {
+  display: none;
+  min-height: calc(100vh - 70px);
+  padding: 40px;
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.view.active { display: block; }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.title-area {
+  text-align: center;
+  margin-bottom: 50px;
+}
+.title-area h1 {
+  font-family: var(--serif);
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.title-area p {
+  color: var(--ink2);
+  font-size: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* VISTA 1: SOFTWARE (ANATOMÍA) */
+.anatomy-container {
+  display: grid;
+  grid-template-columns: 320px 1fr 320px;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.anatomy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Cards de Anatomía */
+.anatomy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  opacity: 0.5;
+  transform: translateX(0);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  position: relative;
+}
+.anatomy-card.active, .anatomy-card:hover {
+  opacity: 1;
+  background: var(--surface2);
+  border-color: var(--cyan);
+  transform: translateX(5px);
+  z-index: 10;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+.anatomy-info.right .anatomy-card.active, .anatomy-info.right .anatomy-card:hover {
+  transform: translateX(-5px);
+}
+
+.card-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 12px;
+}
+.anatomy-card.active .card-icon {
+  background: rgba(86, 214, 232, 0.15);
+}
+.anatomy-card.active .card-icon svg { color: var(--cyan); }
+.card-icon svg { width: 18px; height: 18px; color: var(--ink3); transition: color 0.3s ease; }
+
+.card-title { font-size: 12px; color: var(--gold); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 4px; }
+.card-model { font-family: var(--serif); font-size: 18px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.card-desc { font-size: 13px; color: var(--ink2); line-height: 1.4; margin-bottom: 12px; }
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-size: 10px; padding: 3px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; color: var(--ink3); font-weight: 600;}
+.anatomy-card.active .tag { border-color: rgba(86, 214, 232, 0.3); color: var(--cyan); }
+
+/* Silueta Central */
+.silhouette-wrapper {
+  position: relative;
+  height: 600px;
+  width: 240px;
+  margin: 0 auto;
+}
+.silhouette {
+  height: 100%;
+  opacity: 0.8;
+  filter: drop-shadow(0 0 20px rgba(86, 214, 232, 0.1));
+}
+/* Puntos Interactivos (Hotspots) */
+.hotspot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--cyan);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px var(--cyan);
+}
+.hotspot::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--cyan);
+  animation: ripple 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hotspot.active {
+  background: var(--green);
+  box-shadow: 0 0 20px var(--green);
+  transform: translate(-50%, -50%) scale(1.3);
+}
+.hotspot.active::before { border-color: var(--green); }
+
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Líneas de conexión SVG */
+.connection-lines {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: -1;
+}
+.conn-line {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 1.5;
+  stroke-dasharray: 4;
+  transition: all 0.3s ease;
+}
+.conn-line.active {
+  stroke: var(--cyan);
+  stroke-dasharray: 0;
+  filter: drop-shadow(0 0 4px var(--cyan));
+}
+
+/* VISTA 2: HARDWARE */
+.hw-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-hdr {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.section-hdr h2 { font-family: var(--serif); font-size: 22px; color: var(--gold); }
+.section-hdr .line { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border), transparent); }
+
+/* Grid de Caminos (Servidores) */
+.paths-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 60px;
+}
+.path-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.path-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 4px;
+}
+.path-card.amd::before { background: linear-gradient(90deg, #FF4500, #FF8A70); }
+.path-card.nvidia::before { background: linear-gradient(90deg, #76B900, var(--green)); }
+
+.path-hdr { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.path-name { font-size: 13px; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700; margin-bottom: 8px;}
+.path-model { font-family: var(--serif); font-size: 24px; font-weight: 700; color: var(--ink); }
+.path-price { text-align: right; }
+.price-val { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--cyan); }
+.price-sub { font-size: 11px; color: var(--ink3); }
+
+.path-specs { display: grid; gap: 12px; margin-bottom: 24px; }
+.spec-row { display: flex; justify-content: space-between; font-size: 13px; padding-bottom: 8px; border-bottom: 1px solid var(--surface2); }
+.spec-lbl { color: var(--ink2); }
+.spec-val { font-weight: 600; color: var(--ink); text-align: right; }
+
+.path-verdict {
+  background: var(--bg);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.5;
+  border-left: 3px solid var(--border);
+}
+.path-card.amd .path-verdict { border-color: #FF8A70; }
+.path-card.nvidia .path-verdict { border-color: #76B900; }
+
+/* Grid de Displays */
+.displays-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.display-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease;
+}
+.display-card:hover { transform: translateY(-4px); border-color: var(--ink3); }
+.disp-vis {
+  height: 200px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.disp-vis svg { width: 100%; height: 100%; }
+.kiosk-stand { opacity: 0.5; }
+.kiosk-glow { filter: drop-shadow(0 0 6px currentColor); }
+.disp-name { font-family: var(--serif); font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.disp-price { font-size: 18px; color: var(--gold); font-weight: 700; margin-bottom: 16px; }
+.disp-desc { font-size: 13px; color: var(--ink2); flex: 1; margin-bottom: 20px; }
+
+.disp-pros { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.disp-pros li { font-size: 12px; color: var(--ink); display: flex; gap: 8px; align-items: flex-start; }
+.disp-pros li::before { content: '✓'; color: var(--green); font-weight: bold; }
+.disp-pros li.con::before { content: '✕'; color: var(--coral); }
+
+/* Media Queries */
+@media(max-width: 1024px) {
+  .anatomy-container { grid-template-columns: 1fr; max-width: 600px; }
+  .silhouette-wrapper { display: none; }
+  .anatomy-card { opacity: 1; transform: none !important; margin-bottom: 16px; }
+  .anatomy-info { gap: 0; }
+  .paths-grid, .displays-grid { grid-template-columns: 1fr; }
+}
+
+/* Badge de Privacidad */
+.privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(70, 201, 154, 0.1);
+  border: 1px solid rgba(70, 201, 154, 0.3);
+  padding: 8px 16px;
+  border-radius: 30px;
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 16px;
+}
+.privacy-badge svg { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+        <line x1="12" y1="22" x2="12" y2="15.5"></line>
+        <polyline points="22 8.5 12 15.5 2 8.5"></polyline>
+        <polyline points="2 15.5 12 8.5 22 15.5"></polyline>
+        <line x1="12" y1="2" x2="12" y2="8.5"></line>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-text">Recepción IA</div>
+      <div class="brand-sub">Arquitectura de Sistema</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchView('software')">1. Software (Anatomía)</div>
+    <div class="tab" onclick="switchView('hardware')">2. Hardware (Cómputo y Display)</div>
+  </div>
+</header>
+
+<!-- ==============================================
+     VISTA 1: SOFTWARE (ANATOMÍA)
+     ============================================== -->
+<div class="view active" id="view-software">
+  <div class="title-area">
+    <h1>Anatomía del Sistema Holográfico</h1>
+    <p>El mapa de la inteligencia on-premise. Cada "órgano" del avatar se procesa 100% dentro del edificio, garantizando latencia mínima y privacidad absoluta bajo la LFPDPPP.</p>
+    <div class="privacy-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Cero datos biométricos en la nube
+    </div>
+  </div>
+
+  <div class="anatomy-container" id="anatomy-grid">
+    <!-- Lado Izquierdo (Sensores y Entrada) -->
+    <div class="anatomy-info left">
+      
+      <!-- Ojos -->
+      <div class="anatomy-card" data-hotspot="ojos">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="card-title">Los Ojos (Visión)</div>
+        <div class="card-model">Reconocimiento Facial</div>
+        <div class="card-desc">Identifica al miembro en milisegundos compensando el contraluz. Bloquea intentos de acceso con fotografías.</div>
+        <div class="card-tags">
+          <span class="tag">DeepFace + FaceNet512</span>
+          <span class="tag">Liveness Detection</span>
+          <span class="tag">97.4% Precisión</span>
+        </div>
+      </div>
+
+      <!-- Oídos -->
+      <div class="anatomy-card" data-hotspot="oidos">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></div>
+        <div class="card-title">Los Oídos (Audición)</div>
+        <div class="card-model">Transcriptor (STT)</div>
+        <div class="card-desc">Escucha al visitante y convierte el audio a texto de forma instantánea. Soporte nativo para modismos mexicanos.</div>
+        <div class="card-tags">
+          <span class="tag">Whisper Large v3 Turbo</span>
+          <span class="tag">faster-whisper</span>
+          <span class="tag">Procesamiento Local</span>
+        </div>
+      </div>
+
+      <!-- Corazón / Core -->
+      <div class="anatomy-card" data-hotspot="corazon">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg></div>
+        <div class="card-title">El Corazón (Core)</div>
+        <div class="card-model">Sistema Operativo Híbrido</div>
+        <div class="card-desc">Casi todo el sistema corre en Linux nativo. Solo el SDK heredado de ZKTeco, un componente antiguo de terceros, vive aislado en una mini-VM Windows.</div>
+        <div class="card-tags">
+          <span class="tag">Ubuntu 24.04</span>
+          <span class="tag">VM Windows Ligera</span>
+        </div>
+      </div>
+
+      <div class="anatomy-card" data-hotspot="memoria">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
+        <div class="card-title">La Memoria (Registro)</div>
+        <div class="card-model">Base de Datos Local</div>
+        <div class="card-desc">Recuerda quién es cada miembro y si está al corriente de pago. Vive dentro del edificio — nunca en un servidor externo.</div>
+        <div class="card-tags">
+          <span class="tag">Estado de miembros</span>
+          <span class="tag">100% local</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Centro (Silueta e interactividad) -->
+    <div class="silhouette-wrapper">
+      <svg class="connection-lines" id="svg-lines"></svg>
+      <!-- Silueta SVG Minimalista de humanoide tipo maniquí -->
+      <svg class="silhouette" viewBox="0 0 200 500" fill="none" stroke="var(--ink3)" stroke-width="1.5">
+        <!-- Cabeza -->
+        <path d="M100 20 C120 20 135 40 135 70 C135 100 115 120 100 130 C85 120 65 100 65 70 C65 40 80 20 100 20 Z" fill="rgba(35, 45, 64, 0.2)"/>
+        <!-- Cuello -->
+        <path d="M85 120 L85 140 C85 150 115 150 115 140 L115 120" />
+        <!-- Torso -->
+        <path d="M85 145 C60 145 40 160 30 180 L40 320 C40 340 70 360 100 360 C130 360 160 340 160 320 L170 180 C160 160 140 145 115 145" fill="rgba(35, 45, 64, 0.2)"/>
+        <!-- Brazos -->
+        <path d="M30 180 C15 190 10 210 15 240 L30 380 C30 390 40 390 45 380 L55 240" />
+        <path d="M170 180 C185 190 190 210 185 240 L170 380 C170 390 160 390 155 380 L145 240" />
+        <!-- Piernas (truncadas) -->
+        <path d="M70 360 L70 480" />
+        <path d="M130 360 L130 480" />
+      </svg>
+      
+      <!-- Hotspots posicionados (left, top relativas a 200x500 svg, transformadas a %) -->
+      <!-- Ojos: x=100, y=60 -> 50%, 12% -->
+      <div class="hotspot" style="left: 50%; top: 12%;" data-id="ojos"></div>
+      <!-- Oídos: x=65, y=75 -> 32.5%, 15% -->
+      <div class="hotspot" style="left: 32.5%; top: 15%;" data-id="oidos"></div>
+      <!-- Cerebro: x=100, y=40 -> 50%, 8% -->
+      <div class="hotspot" style="left: 50%; top: 8%;" data-id="cerebro"></div>
+      <!-- Boca: x=100, y=100 -> 50%, 20% -->
+      <div class="hotspot" style="left: 50%; top: 20%;" data-id="boca"></div>
+      <!-- Corazón: x=100, y=200 -> 50%, 40% -->
+      <div class="hotspot" style="left: 50%; top: 40%;" data-id="corazon"></div>
+      <div class="hotspot" style="left: 50%; top: 48%;" data-id="memoria"></div>
+      <!-- Manos: x=15, y=360 -> 7.5%, 72% -->
+      <div class="hotspot" style="left: 92.5%; top: 72%;" data-id="manos"></div>
+    </div>
+
+    <!-- Lado Derecho (Procesamiento y Salida) -->
+    <div class="anatomy-info right">
+      
+      <!-- Cerebro -->
+      <div class="anatomy-card" data-hotspot="cerebro">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h4l3-9 5 18 3-9h5"/></svg></div>
+        <div class="card-title">El Cerebro (Razonamiento)</div>
+        <div class="card-model">Qwen 3.6 - 27B</div>
+        <div class="card-desc">El LLM que gobierna la inteligencia. Comprende intenciones, sigue reglas de negocio y decide cuándo abrir o notificar.</div>
+        <div class="card-tags">
+          <span class="tag">Apache 2.0</span>
+          <span class="tag">Corre en Ollama</span>
+          <span class="tag">Cero costo/token</span>
+        </div>
+      </div>
+
+      <!-- Boca/Rostro -->
+      <div class="anatomy-card" data-hotspot="boca">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg></div>
+        <div class="card-title">La Boca (Habla & Expresión)</div>
+        <div class="card-model">Avatar Lip-Sync en Vivo</div>
+        <div class="card-desc">Genera voz clonada en español nativo y sincroniza los labios del avatar holográfico en tiempo real (30 fps).</div>
+        <div class="card-tags">
+          <span class="tag">Chatterbox-Turbo</span>
+          <span class="tag">MuseTalk v1.5</span>
+          <span class="tag">Sin lag de nube</span>
+        </div>
+      </div>
+
+      <!-- Manos/Sistema Nervioso -->
+      <div class="anatomy-card" data-hotspot="manos">
+        <div class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="card-title">Las Manos (Acción)</div>
+        <div class="card-model">SDK ZKTeco & WhatsApp</div>
+        <div class="card-desc">El poder de ejecutar: abre el electroimán de la puerta (ControlDevice) y envía WhatsApps instantáneos a los miembros.</div>
+        <div class="card-tags">
+          <span class="tag">Pull SDK v2.0 TCP</span>
+          <span class="tag">Twilio / Kapso API</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ==============================================
+     VISTA 2: HARDWARE
+     ============================================== -->
+<div class="view" id="view-hardware">
+  <div class="hw-container">
+    
+    <div class="title-area">
+      <h1>Opciones de Infraestructura Física</h1>
+      <p>Decisiones estratégicas para el piloto en Works. El software es idéntico en todas las variantes; la inversión define el nivel de rendimiento (lip-sync) y el impacto visual (display).</p>
+    </div>
+
+    <!-- SECCIÓN A: SERVIDORES -->
+    <div class="section-hdr">
+      <h2>1. El Cerebro (Servidor On-Premise)</h2>
+      <div class="line"></div>
+    </div>
+    
+    <div class="paths-grid">
+      <!-- Camino 1: AMD -->
+      <div class="path-card amd">
+        <div class="path-hdr">
+          <div>
+            <div class="path-name">Camino 1 — Máxima Economía</div>
+            <div class="path-model">Beelink GTR9 Pro</div>
+          </div>
+          <div class="path-price">
+            <div class="price-val">~$1,999</div>
+            <div class="price-sub">USD aprox.</div>
+          </div>
+        </div>
+        
+        <div class="path-specs">
+          <div class="spec-row"><span class="spec-lbl">Procesador</span> <span class="spec-val">AMD Ryzen AI Max+ 395</span></div>
+          <div class="spec-row"><span class="spec-lbl">Memoria</span> <span class="spec-val">128 GB LPDDR5X Unificada</span></div>
+          <div class="spec-row"><span class="spec-lbl">Gráficos</span> <span class="spec-val">Radeon 890M (Integrada)</span></div>
+        </div>
+
+        <div class="path-verdict">
+          <b>El Trade-off:</b> Protege la inversión original. Todo corre perfecto excepto un signo de interrogación: el lip-sync (MuseTalk) requiere ROCm para AMD. <b>Riesgo técnico medio:</b> si el FPS no alcanza, se usa un motor labial más básico (Wav2Lip).
+        </div>
+      </div>
+
+      <!-- Camino 2: NVIDIA -->
+      <div class="path-card nvidia">
+        <div class="path-hdr">
+          <div>
+            <div class="path-name">Camino 2 — Cero Riesgo Técnico</div>
+            <div class="path-model">NVIDIA DGX Spark</div>
+          </div>
+          <div class="path-price">
+            <div class="price-val">~$4,699</div>
+            <div class="price-sub">USD aprox.</div>
+          </div>
+        </div>
+        
+        <div class="path-specs">
+          <div class="spec-row"><span class="spec-lbl">Arquitectura</span> <span class="spec-val">GB10 Grace Blackwell</span></div>
+          <div class="spec-row"><span class="spec-lbl">Memoria</span> <span class="spec-val">128 GB LPDDR5X (NVLink)</span></div>
+          <div class="spec-row"><span class="spec-lbl">Ecosistema</span> <span class="spec-val">CUDA Nativo + Ollama Core</span></div>
+        </div>
+
+        <div class="path-verdict">
+          <b>El Trade-off:</b> Cuesta ~$2,700 USD más, pero elimina toda fricción. El modelo de lip-sync vuela a 30fps+ nativos en CUDA. El avatar se verá perfecto, fluido y sin lag. <b>Garantía total de showroom corporativo.</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN B: DISPLAYS -->
+    <div class="section-hdr">
+      <h2>2. El Kiosko (Display Visual)</h2>
+      <div class="line"></div>
+    </div>
+
+    <div class="displays-grid">
+      
+      <!-- Fan Holográfico -->
+      <div class="display-card">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <line x1="50" y1="60" x2="50" y2="92" stroke="var(--border)" stroke-width="2"/>
+            <path d="M30 92 L70 92 L64 98 L36 98 Z" fill="var(--surface2)" stroke="var(--border)"/>
+            <g class="kiosk-glow" stroke="var(--cyan)">
+              <ellipse cx="50" cy="35" rx="16" ry="24" stroke-width="1" stroke-dasharray="2 3" opacity="0.5"/>
+              <line x1="50" y1="12" x2="50" y2="58" stroke-width="2"/>
+              <line x1="36" y1="20" x2="64" y2="50" stroke-width="1.5" opacity="0.7"/>
+              <line x1="64" y1="20" x2="36" y2="50" stroke-width="1.5" opacity="0.7"/>
+            </g>
+            <rect x="74" y="70" width="18" height="14" rx="2" stroke="var(--border)" stroke-width="1.5"/>
+            <line x1="79" y1="87" x2="87" y2="87" stroke="var(--border)" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="disp-name">Fan Holográfico LED</div>
+        <div class="disp-price">~$2.5K - 3.2K MXN</div>
+        <div class="disp-desc">Aspas giratorias con LEDs que crean ilusión 3D. El "holograma" clásico que llama la atención desde la calle.</div>
+        <ul class="disp-pros">
+          <li>Atractivo visual "wow factor"</li>
+          <li class="con">Solo reproduce video en loop</li>
+          <li class="con">No es en tiempo real (lip-sync imposible)</li>
+          <li class="con">Requiere pantalla táctil externa extra</li>
+        </ul>
+      </div>
+
+      <!-- OLED Convencional -->
+      <div class="display-card" style="border-color: var(--gold);">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M40 90 L60 90 L56 96 L44 96 Z" fill="var(--surface2)" stroke="var(--border)"/>
+            <line x1="50" y1="82" x2="50" y2="90" stroke="var(--border)" stroke-width="2"/>
+            <rect x="26" y="10" width="48" height="72" rx="4" fill="var(--bg)" stroke="var(--ink3)" stroke-width="2"/>
+            <circle cx="50" cy="16" r="1.8" fill="var(--gold)"/>
+            <circle cx="50" cy="38" r="9" fill="var(--gold)" opacity="0.9"/>
+            <path d="M38 58 C42 50 58 50 62 58" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="disp-name">OLED Convencional (55")</div>
+        <div class="disp-price">~$12K - 15K MXN</div>
+        <div class="disp-desc">Pantalla plana montada en kiosko vertical. La opción más sensata: cuida el bolsillo entregando 100% de función.</div>
+        <ul class="disp-pros">
+          <li>Precio inmejorable (retail normal)</li>
+          <li>Avatar y lip-sync en tiempo real</li>
+          <li>Táctil nativo y altavoces integrados</li>
+          <li class="con">Es una pantalla normal, no "flota"</li>
+        </ul>
+      </div>
+
+      <!-- OLED Transparente -->
+      <div class="display-card">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M40 90 L60 90 L56 96 L44 96 Z" fill="var(--surface2)" stroke="var(--border)"/>
+            <line x1="50" y1="82" x2="50" y2="90" stroke="var(--border)" stroke-width="2"/>
+            <line x1="18" y1="30" x2="82" y2="34" stroke="var(--border)" stroke-width="1" opacity="0.6"/>
+            <line x1="18" y1="55" x2="82" y2="59" stroke="var(--border)" stroke-width="1" opacity="0.6"/>
+            <rect x="26" y="10" width="48" height="72" rx="4" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="3 3"/>
+            <circle cx="50" cy="16" r="1.8" fill="var(--cyan)"/>
+            <circle cx="50" cy="38" r="9" fill="var(--cyan)" class="kiosk-glow" opacity="0.9"/>
+            <path d="M38 58 C42 50 58 50 62 58" stroke="var(--cyan)" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="disp-name">OLED Transparente (55")</div>
+        <div class="disp-price">~$26K - 38.5K MXN</div>
+        <div class="disp-desc">Pantalla sin panel posterior (cristal). El avatar parece estar físicamente en la sala. Hardware premium comercial.</div>
+        <ul class="disp-pros">
+          <li>Verdadero efecto "Sci-Fi" holográfico</li>
+          <li>Tiempo real 100% funcional</li>
+          <li>El estándar para showroom corporativo</li>
+          <li class="con">Salto significativo en presupuesto</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="section-hdr" style="margin-top:60px">
+      <h2>3. Accesorios y Montaje</h2>
+      <div class="line"></div>
+    </div>
+    <div class="displays-grid">
+
+      <!-- Cámara -->
+      <div class="display-card">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <path d="M35 62 C35 70 65 70 65 62" stroke="var(--border)" stroke-width="2"/>
+            <rect x="22" y="38" width="56" height="24" rx="10" fill="var(--surface2)" stroke="var(--ink3)" stroke-width="1.5"/>
+            <circle cx="50" cy="50" r="10" fill="var(--bg)" stroke="var(--gold)" stroke-width="1.5"/>
+            <circle cx="50" cy="50" r="9" fill="var(--gold)" class="kiosk-glow" opacity="0.85"/>
+            <circle cx="47" cy="47" r="2" fill="var(--ink)" opacity="0.6"/>
+            <circle cx="30" cy="50" r="1.6" fill="var(--ink3)"/>
+            <circle cx="70" cy="50" r="1.6" fill="var(--ink3)"/>
+            <path d="M40 30 L50 22 L60 30" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="2 2"/>
+          </svg>
+        </div>
+        <div class="disp-name" style="font-size:16px">Cámara</div>
+        <div class="disp-price">~$199 USD</div>
+        <div class="disp-desc">Logitech BRIO 4K. WDR por hardware — compensa el contraluz de la entrada. Micrófono dual incluido. Se monta sobre el borde superior del display.</div>
+      </div>
+
+      <!-- Bocinas -->
+      <div class="display-card">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect x="20" y="32" width="42" height="36" rx="7" fill="var(--surface2)" stroke="var(--ink3)" stroke-width="1.5"/>
+            <line x1="28" y1="40" x2="28" y2="60" stroke="var(--border)" stroke-width="2"/>
+            <line x1="34" y1="40" x2="34" y2="60" stroke="var(--border)" stroke-width="2"/>
+            <line x1="40" y1="40" x2="40" y2="60" stroke="var(--border)" stroke-width="2"/>
+            <line x1="46" y1="40" x2="46" y2="60" stroke="var(--border)" stroke-width="2"/>
+            <line x1="52" y1="40" x2="52" y2="60" stroke="var(--border)" stroke-width="2"/>
+            <path d="M68 40 A14 14 0 0 1 68 60" stroke="var(--cyan)" stroke-width="1.5" opacity="0.8"/>
+            <path d="M74 34 A22 22 0 0 1 74 66" stroke="var(--cyan)" stroke-width="1.5" opacity="0.5"/>
+            <path d="M80 28 A30 30 0 0 1 80 72" stroke="var(--cyan)" stroke-width="1.5" opacity="0.25"/>
+          </svg>
+        </div>
+        <div class="disp-name" style="font-size:16px">Bocinas</div>
+        <div class="disp-price">~$2,190 MXN</div>
+        <div class="disp-desc">Solo si se elige Fan Holográfico o transparente — el OLED convencional ya trae audio integrado.</div>
+      </div>
+
+      <!-- Gabinete / Montaje -->
+      <div class="display-card">
+        <div class="disp-vis">
+          <svg viewBox="0 0 100 100" fill="none">
+            <rect x="28" y="18" width="44" height="64" rx="2" stroke="var(--gold)" stroke-width="1.2" stroke-dasharray="3 3" opacity="0.8"/>
+            <path d="M22 18 L28 18 L28 24" stroke="var(--gold)" stroke-width="1.5"/>
+            <path d="M78 18 L72 18 L72 24" stroke="var(--gold)" stroke-width="1.5"/>
+            <path d="M22 82 L28 82 L28 76" stroke="var(--gold)" stroke-width="1.5"/>
+            <path d="M78 82 L72 82 L72 76" stroke="var(--gold)" stroke-width="1.5"/>
+            <line x1="16" y1="18" x2="16" y2="82" stroke="var(--ink3)" stroke-width="1"/>
+            <line x1="13" y1="18" x2="19" y2="18" stroke="var(--ink3)" stroke-width="1"/>
+            <line x1="13" y1="82" x2="19" y2="82" stroke="var(--ink3)" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="disp-name" style="font-size:16px">Gabinete / Montaje</div>
+        <div class="disp-price">Cotización local</div>
+        <div class="disp-desc">A la medida del display elegido. Se fabrica con carpintero o herrero local en Querétaro — por eso se dibuja como plano, no como pieza terminada.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// --- Tabs Logic ---
+function switchView(viewName) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  
+  document.getElementById('view-' + viewName).classList.add('active');
+  event.currentTarget.classList.add('active');
+
+  // Redraw lines if software view
+  if (viewName === 'software') {
+    setTimeout(drawLines, 50);
+  }
+}
+
+// --- Anatomy Hotspots Logic ---
+const cards = document.querySelectorAll('.anatomy-card');
+const hotspots = document.querySelectorAll('.hotspot');
+let svgLines = null;
+
+function activate(id) {
+  // Reset all
+  cards.forEach(c => c.classList.remove('active'));
+  hotspots.forEach(h => h.classList.remove('active'));
+  document.querySelectorAll('.conn-line').forEach(l => l.classList.remove('active'));
+  
+  // Activate target
+  const card = document.querySelector(`.anatomy-card[data-hotspot="${id}"]`);
+  const hotspot = document.querySelector(`.hotspot[data-id="${id}"]`);
+  const line = document.getElementById(`line-${id}`);
+  
+  if(card) card.classList.add('active');
+  if(hotspot) hotspot.classList.add('active');
+  if(line) line.classList.add('active');
+}
+
+cards.forEach(card => {
+  card.addEventListener('mouseenter', () => activate(card.dataset.hotspot));
+});
+hotspots.forEach(hotspot => {
+  hotspot.addEventListener('mouseenter', () => activate(hotspot.dataset.id));
+});
+
+// --- Draw SVG Lines dynamically ---
+function drawLines() {
+  const svg = document.getElementById('svg-lines');
+  if(!svg) return;
+  svg.innerHTML = ''; // clear
+  
+  const container = document.getElementById('anatomy-grid');
+  const containerRect = container.getBoundingClientRect();
+  
+  hotspots.forEach(hotspot => {
+    const id = hotspot.dataset.id;
+    const card = document.querySelector(`.anatomy-card[data-hotspot="${id}"]`);
+    if(!card) return;
+
+    // Get centers
+    const hRect = hotspot.getBoundingClientRect();
+    const cRect = card.getBoundingClientRect();
+
+    // Calculate relative coordinates to the container
+    const hx = (hRect.left + hRect.width/2) - containerRect.left;
+    const hy = (hRect.top + hRect.height/2) - containerRect.top;
+    
+    // For the card, snap to the edge nearest the silhouette
+    const isRight = card.closest('.anatomy-info.right') !== null;
+    const cx = isRight ? (cRect.left - containerRect.left) : (cRect.right - containerRect.left);
+    const cy = (cRect.top + cRect.height/2) - containerRect.top;
+
+    // Draw bezier curve
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const ctrlDist = Math.abs(cx - hx) * 0.5; // Curve intensity
+    const d = `M ${cx} ${cy} C ${isRight ? cx - ctrlDist : cx + ctrlDist} ${cy}, ${isRight ? hx + ctrlDist : hx - ctrlDist} ${hy}, ${hx} ${hy}`;
+    
+    path.setAttribute('d', d);
+    path.setAttribute('class', 'conn-line');
+    path.setAttribute('id', `line-${id}`);
+    svg.appendChild(path);
+  });
+}
+
+// Initial draw and resize listener
+window.addEventListener('load', drawLines);
+window.addEventListener('resize', drawLines);
+
+// Init with 'cerebro' active
+setTimeout(() => activate('cerebro'), 500);
+
+</script>
+</body>
+</html>

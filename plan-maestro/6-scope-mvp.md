@@ -1,9 +1,12 @@
-# SCOPE DEL MVP — Sistema de Recepción con IA on-premise
+# SCOPE DEL MVP — HOLO AI (piloto en Works)
  
 > Documento cerrado en Fase 1 — 28 jun 2026.
-> Fuente de verdad del alcance del piloto en Works.
+> Fuente de verdad del alcance del piloto en Works — NO es la definición
+> general del producto. Ver `3-contexto-proyecto.md`, sección "Visión y
+> mercado objetivo", para la tesis de escalamiento hacia Gobierno y
+> empresas premium.
 > Cualquier cambio de scope requiere decisión explícita de Guus y actualización de este archivo.
- 
+
 ---
  
 ## Módulos DENTRO del MVP
